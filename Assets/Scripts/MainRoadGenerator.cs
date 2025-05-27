@@ -32,7 +32,6 @@ public class MainRoadGenerator : MonoBehaviour
 {
     [Header("Water Detection")]
     public LayerMask waterLayer;
-    public float raycastStartHeight = 100f;
     public float waterMinY = 25f;
     public float waterMaxY = 30f;
     public Color waterCellColor = new Color(0, 0.5f, 1f, 0.3f);
@@ -56,6 +55,7 @@ public class MainRoadGenerator : MonoBehaviour
 
     public TerrainCell[,] Grid => grid;
     public RoadData RoadData => roadData;
+    [SerializeField] private MapGenerator mapGenerator; 
 
     [Header("Grid Visualization")]
     public bool showGrid = true;
@@ -63,10 +63,10 @@ public class MainRoadGenerator : MonoBehaviour
     [Range(1, 100)] public int gridStep = 100;
     public Color startPointColor = Color.green;
     public Color endPointColor = Color.red;
-    public float pointRadius = 10f;
+    public float pointRadius = 10f; 
+    private HashSet<Vector2Int> waterCells = new HashSet<Vector2Int>();
 
     [Header("Debug")]
-    public bool debugRaycasts = true;
     public int debugStep = 100;
 
     private bool isGenerated = false;
@@ -84,29 +84,54 @@ public class MainRoadGenerator : MonoBehaviour
 
     void Start()
     {
+        EndlessTerrain.OnChunksUpdated += BuildWaterCellsFromChunks;
         MapGenerator.OnMapGenerationComplete += HandleMapGenerationComplete;
     }
 
-    void OnEnable()
-    {
-        EndlessTerrain.OnChunksUpdated += HandleChunksReady;
-    }
     void HandleMapGenerationComplete()
     {
         GenerateRoadSystem();
         MapGenerator.OnMapGenerationComplete -= HandleMapGenerationComplete;
     }
 
-    void HandleChunksReady()
+    void BuildWaterCellsFromChunks()
     {
-        var chunks = EndlessTerrain.terrainChunkDictionary;
-        Debug.Log("Chunks ready: " + chunks.Count);
-        InitializeGrid(); 
+        waterCells.Clear();
+
+        int chunkSize = mapGenerator.mapChunkSize;               // from your MapGenerator
+        float scale = mapGenerator.terrainData.uniformScale; // world scaling
+
+        foreach (var kv in EndlessTerrain.terrainChunkDictionary)
+        {
+            Vector2 chunkCoord = kv.Key;
+            var chunk = kv.Value;
+            var mapData = chunk.mapData;
+            if (mapData.heightMap == null) continue;
+
+            // loop local chunk coords
+            for (int localY = 0; localY < mapData.heightMap.GetLength(1); localY++)
+            {
+                for (int localX = 0; localX < mapData.heightMap.GetLength(0); localX++)
+                {
+                    float h = mapData.heightMap[localX, localY];
+                    Debug.Log("Chunk Value:  " + chunk);
+                    // choose your threshold; e.g. terrainData.minHeight:
+                    if (h <= mapGenerator.terrainData.minHeight)
+                    {
+                        // convert to global grid index:
+                        int gx = Mathf.RoundToInt(chunkCoord.x * chunkSize + localX);
+                        int gy = Mathf.RoundToInt(chunkCoord.y * chunkSize + localY);
+                        var cell = new Vector2Int(gx, gy);
+                        waterCells.Add(cell);
+                    }
+                }
+            }
+        }
     }
     void OnDestroy()
     {
         MapGenerator.OnMapGenerationComplete -= HandleMapGenerationComplete;
-        EndlessTerrain.OnChunksUpdated -= HandleChunksReady;
+        EndlessTerrain.OnChunksUpdated -= BuildWaterCellsFromChunks;
     }
 
     public void GenerateRoadSystem()
@@ -154,17 +179,8 @@ public class MainRoadGenerator : MonoBehaviour
                     road = RoadType.None
                 };
 
-                Vector3 rayOrigin = new Vector3(worldX, raycastStartHeight, worldZ);
-                if (Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hit, Mathf.Infinity, waterLayer))
-                {
-                    bool isWater = hit.point.y >= waterMinY && hit.point.y <= waterMaxY;
-                    if (debugRaycasts && x % debugStep == 0 && y % debugStep == 0)
-                    {
-                        Debug.Log($"Hit at {hit.point.y:F2} (water range: {waterMinY}-{waterMaxY}); Is water: {isWater}");
-                    }
-                    if (isWater)
-                        cell.terrain = TerrainType.Water;
-                }
+                if (waterCells.Contains(new Vector2Int(x, y)))
+                    cell.terrain = TerrainType.Water;
 
                 grid[x, y] = cell;
             }
