@@ -4,7 +4,7 @@ using UnityEngine;
 public class RoadVisualizer : MonoBehaviour
 {
     public GameObject[] roadPrefabs; // Order: Straight, Curve, TJunc, Cross, DeadEnd
-    public float roadHeight = 0.1f;
+    //public float roadHeight = 0.1f;
     public float roadScale = 0.9f;
     private Dictionary<Vector2Int, GameObject> roadInstances = new Dictionary<Vector2Int, GameObject>();
     [SerializeField] private MainRoadGenerator mainRoad;
@@ -62,10 +62,9 @@ public class RoadVisualizer : MonoBehaviour
                 }
 
                 Vector3 worldPos = mainRoad.GridToWorldPosition(pos);
-                worldPos.y = roadHeight;
                 Quaternion rotation = GetRoadRotation(segment, pos);
 
-                GameObject roadGO = Instantiate(roadPrefabs[(int)segment], worldPos, rotation, transform);
+                GameObject roadGO = Instantiate(roadPrefabs[(int)segment],worldPos,rotation,transform);
                 roadGO.transform.localScale = Vector3.one * roadScale;
 
                 Debug.Log($"[RoadVisualizer] Instantiated road at ({x},{y}) segment: {segment}");

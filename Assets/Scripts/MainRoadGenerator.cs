@@ -55,7 +55,8 @@ public class MainRoadGenerator : MonoBehaviour
 
     public TerrainCell[,] Grid => grid;
     public RoadData RoadData => roadData;
-    [SerializeField] private MapGenerator mapGenerator; 
+    [SerializeField] private MapGenerator mapGenerator;
+    [SerializeField] private EndlessTerrain endlessTerrain;
 
     [Header("Grid Visualization")]
     public bool showGrid = true;
@@ -71,6 +72,8 @@ public class MainRoadGenerator : MonoBehaviour
 
     private bool isGenerated = false;
     private bool isClassified = false;
+    private bool mapReady = false;
+    private bool chunksReady = false;
     public bool IsInitialized { get; private set; }
     [SerializeField] private string startPointTag = "StartingPoint";
 
@@ -82,29 +85,60 @@ public class MainRoadGenerator : MonoBehaviour
         new Vector2Int(0, 1)
     };
 
-    void Start()
+    void OnEnable()
     {
-        EndlessTerrain.OnChunksUpdated += BuildWaterCellsFromChunks;
-        MapGenerator.OnMapGenerationComplete += HandleMapGenerationComplete;
+        MapGenerator.OnMapGenerationComplete += OnMapReady;
+        EndlessTerrain.OnChunksUpdated += OnChunksReady;
     }
 
-    void HandleMapGenerationComplete()
+    void OnDisable()
     {
-        GenerateRoadSystem();
-        MapGenerator.OnMapGenerationComplete -= HandleMapGenerationComplete;
+        MapGenerator.OnMapGenerationComplete -= OnMapReady;
+        EndlessTerrain.OnChunksUpdated -= OnChunksReady;
+    }
+
+    private void OnMapReady()
+    {
+        mapReady = true;
+        TryGenerateRoads();
+    }
+
+    private void OnChunksReady()
+    {
+        // First build water cells from the heightmaps
+        BuildWaterCellsFromChunks();
+        chunksReady = true;
+        TryGenerateRoads();
+    }
+
+    // Only run once both map and chunks are ready
+    private void TryGenerateRoads()
+    {
+        if (!IsInitialized && mapReady && chunksReady)
+        {
+            GenerateRoadSystem();
+            IsInitialized = true;
+        }
     }
 
     void BuildWaterCellsFromChunks()
     {
         waterCells.Clear();
 
-        int chunkSize = mapGenerator.mapChunkSize;               // from your MapGenerator
-        float scale = mapGenerator.terrainData.uniformScale; // world scaling
+        int chunkSize = mapGenerator.mapChunkSize;
+        Debug.Log("chunkSize: " + chunkSize + " (Map Generator's chunk size)");
+        float scale = mapGenerator.terrainData.uniformScale;
+        Debug.Log("Uniform scale: " + scale);
 
         foreach (var kv in EndlessTerrain.terrainChunkDictionary)
         {
             Vector2 chunkCoord = kv.Key;
             var chunk = kv.Value;
+            if (chunk == null)
+            {
+                Debug.LogError($"Null chunk found at coordinate {kv.Key}");
+                continue;
+            }
             var mapData = chunk.mapData;
             if (mapData.heightMap == null) continue;
 
@@ -114,7 +148,7 @@ public class MainRoadGenerator : MonoBehaviour
                 for (int localX = 0; localX < mapData.heightMap.GetLength(0); localX++)
                 {
                     float h = mapData.heightMap[localX, localY];
-                    Debug.Log("Chunk Value:  " + chunk);
+                    
                     // choose your threshold; e.g. terrainData.minHeight:
                     if (h <= mapGenerator.terrainData.minHeight)
                     {
@@ -128,10 +162,64 @@ public class MainRoadGenerator : MonoBehaviour
             }
         }
     }
-    void OnDestroy()
+    private Dictionary<Vector2, EndlessTerrain.TerrainChunk> chunkDict
+    => EndlessTerrain.terrainChunkDictionary;
+    private void BuildHeightSampler() { /* no-op for now */ }
+
+    public float SampleTerrainHeight(Vector3 worldPos)
     {
-        MapGenerator.OnMapGenerationComplete -= HandleMapGenerationComplete;
-        EndlessTerrain.OnChunksUpdated -= BuildWaterCellsFromChunks;
+        // 1) Convert to chunk‐local units (unscaled)
+        float uscale = mapGenerator.terrainData.uniformScale;
+        float luaX = worldPos.x / uscale;
+        float luaZ = worldPos.z / uscale;
+
+        // 2) Determine which chunk we're in
+        int chunkSize = mapGenerator.mapChunkSize - 1;   // matches EndlessTerrain
+        int cx = Mathf.RoundToInt(luaX / chunkSize);
+        int cz = Mathf.RoundToInt(luaZ / chunkSize);
+        var key = new Vector2(cx, cz);
+
+        if (!chunkDict.TryGetValue(key, out var chunk) || chunk.mapData.heightMap == null)
+        {
+            Debug.Log("[MainRoadGenerator] No Value");
+            return 0f;  // fallback if outside
+        }
+           
+
+        // 3) Compute local offsets inside that chunk
+        float offsetX = luaX - cx * chunkSize;
+        float offsetZ = luaZ - cz * chunkSize;
+
+        var hm = chunk.mapData.heightMap;
+        int hms = hm.GetLength(0);  // heightMap is square [hms × hms]
+
+        // 4) Map offset → heightMap sample coordinates
+        //    (if your mapData was generated at size N, then samples go 0..N-1)
+        float sampleX = offsetX / chunkSize * (hms - 1);
+        float sampleZ = offsetZ / chunkSize * (hms - 1);
+
+        // 5) Bilinear‐interpolate between the four nearest samples
+        int x0 = Mathf.Clamp(Mathf.FloorToInt(sampleX), 0, hms - 1);
+        int z0 = Mathf.Clamp(Mathf.FloorToInt(sampleZ), 0, hms - 1);
+        int x1 = Mathf.Clamp(x0 + 1, 0, hms - 1);
+        int z1 = Mathf.Clamp(z0 + 1, 0, hms - 1);
+
+        float tx = sampleX - x0;
+        float tz = sampleZ - z0;
+
+        float h00 = hm[x0, z0];
+        float h10 = hm[x1, z0];
+        float h01 = hm[x0, z1];
+        float h11 = hm[x1, z1];
+
+        float h0 = Mathf.Lerp(h00, h10, tx);
+        float h1 = Mathf.Lerp(h01, h11, tx);
+        float raw = Mathf.Lerp(h0, h1, tz);
+
+        // 6) Apply your same height‐curve & multiplier used in mesh generation
+        var td = mapGenerator.terrainData;
+        float curved = td.meshHeightCurve.Evaluate(raw);
+        return curved * td.meshHeightMultiplier;
     }
 
     public void GenerateRoadSystem()
@@ -146,7 +234,12 @@ public class MainRoadGenerator : MonoBehaviour
 
         isGenerated = true;
         InitializeGrid();
-        if (!FindStartPoint()) return;
+        if (!FindStartPoint())
+        {
+            Debug.Log("No Start Points, idiots!");
+            return;
+        }
+        
         FindEndpoints();
         if (processClosestFirst)
             OrderEndpointsByDistance();
@@ -224,6 +317,7 @@ public class MainRoadGenerator : MonoBehaviour
             return false;
         }
 
+        // Destroy extras
         foreach (var sp in starts)
             if (sp != selected)
                 Destroy(sp);
@@ -340,10 +434,20 @@ public class MainRoadGenerator : MonoBehaviour
         return new Vector2Int(gx, gy);
     }
 
-    public Vector3 GridToWorldPosition(Vector2Int g)
+    public Vector3 GridToWorldPosition(Vector2Int gridPos)
     {
         float half = gridSize / 2f;
-        return new Vector3(g.x - half, 27f, g.y - half);
+        var p = new Vector3(gridPos.x - half,
+                            0,
+                            gridPos.y - half);
+
+        // sample the real terrain height here:
+        float rawHeight = SampleTerrainHeight(p);
+
+        // apply the same 20× scale your terrain GameObject has on Y:
+        p.y = rawHeight * 40f;
+
+        return p;
     }
 
     void OrderEndpointsByDistance()

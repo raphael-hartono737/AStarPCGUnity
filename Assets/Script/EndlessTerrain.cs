@@ -69,6 +69,7 @@ public class EndlessTerrain : MonoBehaviour {
 						terrainChunkDictionary [viewedChunkCoord].UpdateTerrainChunk ();
 					} else {
 						terrainChunkDictionary.Add (viewedChunkCoord, new TerrainChunk (viewedChunkCoord, chunkSize, detailLevels, colliderLODIndex, transform, mapMaterial));
+						Debug.Log("ChunksUpdated fired");
                         OnChunksUpdated?.Invoke();
                     }
 				}
