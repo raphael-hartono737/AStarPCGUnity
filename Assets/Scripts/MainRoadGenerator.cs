@@ -9,6 +9,7 @@ public enum RoadSegment { Straight, Curve, TJunc, Cross, DeadEnd }
 [System.Serializable]
 public class TerrainCell
 {
+    // Now holds the exact Y‐coordinate from the raycast hit.
     public float height;
     public TerrainType terrain;
     public RoadType road;
@@ -30,14 +31,14 @@ public static class RoadGenerationEvents
 
 public class MainRoadGenerator : MonoBehaviour
 {
-    [Header("Water Detection")]
-    public LayerMask waterLayer;
-    public float waterMinY = 25f;
-    public float waterMaxY = 30f;
-    public Color waterCellColor = new Color(0, 0.5f, 1f, 0.3f);
+    [Header("Water Detection (Raycast)")]
+    [Tooltip("Raycast origin Y‐coordinate.")]
+    public float rayOriginY = 100f;
+    [Tooltip("Raycast checks down to this Y‐coordinate.")]
+    public float rayTargetY = 37f;
 
     [Header("Grid Settings")]
-    public int gridSize = 2500;
+    public int gridSize = 250;
     public float noiseScale = 0.1f;
 
     [Header("Pathfinding")]
@@ -50,11 +51,14 @@ public class MainRoadGenerator : MonoBehaviour
     public string templeTag = "Temple";
     public string gatewayChildName = "Gateway";
 
+    // **Replace** the full‐grid array with a dictionary for lazy initialization:
+    private Dictionary<Vector2Int, TerrainCell> _cellDict = new Dictionary<Vector2Int, TerrainCell>();
     private TerrainCell[,] grid;
     private RoadData roadData = new RoadData();
 
     public TerrainCell[,] Grid => grid;
     public RoadData RoadData => roadData;
+
     [SerializeField] private MapGenerator mapGenerator;
     [SerializeField] private EndlessTerrain endlessTerrain;
 
@@ -64,8 +68,12 @@ public class MainRoadGenerator : MonoBehaviour
     [Range(1, 100)] public int gridStep = 100;
     public Color startPointColor = Color.green;
     public Color endPointColor = Color.red;
-    public float pointRadius = 10f; 
+    public float pointRadius = 10f;
     private HashSet<Vector2Int> waterCells = new HashSet<Vector2Int>();
+
+    [Header("Terrain Classification")]
+    [Tooltip("Any cell with height above this value is considered ‘Steep’.")]
+    public float steepThreshold = 10f;
 
     [Header("Debug")]
     public int debugStep = 100;
@@ -105,13 +113,11 @@ public class MainRoadGenerator : MonoBehaviour
 
     private void OnChunksReady()
     {
-        // First build water cells from the heightmaps
         BuildWaterCellsFromChunks();
         chunksReady = true;
         TryGenerateRoads();
     }
 
-    // Only run once both map and chunks are ready
     private void TryGenerateRoads()
     {
         if (!IsInitialized && mapReady && chunksReady)
@@ -121,84 +127,62 @@ public class MainRoadGenerator : MonoBehaviour
         }
     }
 
-    void BuildWaterCellsFromChunks()
+    private void BuildWaterCellsFromChunks()
     {
         waterCells.Clear();
 
         int chunkSize = mapGenerator.mapChunkSize;
-        Debug.Log("chunkSize: " + chunkSize + " (Map Generator's chunk size)");
         float scale = mapGenerator.terrainData.uniformScale;
-        Debug.Log("Uniform scale: " + scale);
 
         foreach (var kv in EndlessTerrain.terrainChunkDictionary)
         {
             Vector2 chunkCoord = kv.Key;
             var chunk = kv.Value;
-            if (chunk == null)
-            {
-                Debug.LogError($"Null chunk found at coordinate {kv.Key}");
-                continue;
-            }
-            var mapData = chunk.mapData;
-            if (mapData.heightMap == null) continue;
+            if (chunk == null || chunk.mapData.heightMap == null) continue;
 
-            // loop local chunk coords
-            for (int localY = 0; localY < mapData.heightMap.GetLength(1); localY++)
+            for (int localY = 0; localY < chunk.mapData.heightMap.GetLength(1); localY++)
             {
-                for (int localX = 0; localX < mapData.heightMap.GetLength(0); localX++)
+                for (int localX = 0; localX < chunk.mapData.heightMap.GetLength(0); localX++)
                 {
-                    float h = mapData.heightMap[localX, localY];
-                    
-                    // choose your threshold; e.g. terrainData.minHeight:
+                    float h = chunk.mapData.heightMap[localX, localY];
                     if (h <= mapGenerator.terrainData.minHeight)
                     {
-                        // convert to global grid index:
                         int gx = Mathf.RoundToInt(chunkCoord.x * chunkSize + localX);
                         int gy = Mathf.RoundToInt(chunkCoord.y * chunkSize + localY);
-                        var cell = new Vector2Int(gx, gy);
-                        waterCells.Add(cell);
+                        waterCells.Add(new Vector2Int(gx, gy));
                     }
                 }
             }
         }
     }
-    private Dictionary<Vector2, EndlessTerrain.TerrainChunk> chunkDict
-    => EndlessTerrain.terrainChunkDictionary;
-    private void BuildHeightSampler() { /* no-op for now */ }
 
     public float SampleTerrainHeight(Vector3 worldPos)
     {
-        // 1) Convert to chunk‐local units (unscaled)
+        // (Unchanged; used only for deciding steep/flat.)
         float uscale = mapGenerator.terrainData.uniformScale;
         float luaX = worldPos.x / uscale;
         float luaZ = worldPos.z / uscale;
 
-        // 2) Determine which chunk we're in
-        int chunkSize = mapGenerator.mapChunkSize - 1;   // matches EndlessTerrain
+        int chunkSize = mapGenerator.mapChunkSize - 1;
         int cx = Mathf.RoundToInt(luaX / chunkSize);
         int cz = Mathf.RoundToInt(luaZ / chunkSize);
         var key = new Vector2(cx, cz);
 
-        if (!chunkDict.TryGetValue(key, out var chunk) || chunk.mapData.heightMap == null)
+        if (!EndlessTerrain.terrainChunkDictionary.TryGetValue(key, out var chunk) ||
+            chunk.mapData.heightMap == null)
         {
-            Debug.Log("[MainRoadGenerator] No Value");
-            return 0f;  // fallback if outside
+            return 0f;
         }
-           
 
-        // 3) Compute local offsets inside that chunk
         float offsetX = luaX - cx * chunkSize;
         float offsetZ = luaZ - cz * chunkSize;
 
         var hm = chunk.mapData.heightMap;
-        int hms = hm.GetLength(0);  // heightMap is square [hms × hms]
+        int hms = hm.GetLength(0);
 
-        // 4) Map offset → heightMap sample coordinates
-        //    (if your mapData was generated at size N, then samples go 0..N-1)
         float sampleX = offsetX / chunkSize * (hms - 1);
         float sampleZ = offsetZ / chunkSize * (hms - 1);
 
-        // 5) Bilinear‐interpolate between the four nearest samples
         int x0 = Mathf.Clamp(Mathf.FloorToInt(sampleX), 0, hms - 1);
         int z0 = Mathf.Clamp(Mathf.FloorToInt(sampleZ), 0, hms - 1);
         int x1 = Mathf.Clamp(x0 + 1, 0, hms - 1);
@@ -216,7 +200,6 @@ public class MainRoadGenerator : MonoBehaviour
         float h1 = Mathf.Lerp(h01, h11, tx);
         float raw = Mathf.Lerp(h0, h1, tz);
 
-        // 6) Apply your same height‐curve & multiplier used in mesh generation
         var td = mapGenerator.terrainData;
         float curved = td.meshHeightCurve.Evaluate(raw);
         return curved * td.meshHeightMultiplier;
@@ -231,53 +214,28 @@ public class MainRoadGenerator : MonoBehaviour
         }
 
         Debug.Log("[MainRoadGenerator] Generating road system...");
-
         isGenerated = true;
-        InitializeGrid();
+
         if (!FindStartPoint())
         {
-            Debug.Log("No Start Points, idiots!");
+            Debug.LogError("[MainRoadGenerator] No valid start point found.");
             return;
         }
-        
+
         FindEndpoints();
         if (processClosestFirst)
             OrderEndpointsByDistance();
-        CalculateMainRoad();
-        
 
-        ClassifySegments();
+        CalculateMainRoad();                    // A* will fill only the visited cells in _cellDict
+        BuildFullGridFromDictionary();          // Now build a full 2D array from those visited cells
+        ClassifySegments();                     // Classify road segments on the completed array
 
         IsInitialized = true;
         var branchGen = GetComponent<BranchGenerator>();
         if (branchGen != null)
             branchGen.GenerateBranchPaths();
+
         RoadGenerationEvents.OnRoadGenerationComplete?.Invoke();
-    }
-
-    void InitializeGrid()
-    {
-        grid = new TerrainCell[gridSize, gridSize];
-        float half = gridSize / 2f;
-        for (int x = 0; x < gridSize; x++)
-        {
-            for (int y = 0; y < gridSize; y++)
-            {
-                float worldX = x - half;
-                float worldZ = y - half;
-                float noise = Mathf.PerlinNoise(worldX * noiseScale, worldZ * noiseScale);
-                var cell = new TerrainCell
-                {
-                    terrain = TerrainType.Flat,
-                    road = RoadType.None
-                };
-
-                if (waterCells.Contains(new Vector2Int(x, y)))
-                    cell.terrain = TerrainType.Water;
-
-                grid[x, y] = cell;
-            }
-        }
     }
 
     bool FindStartPoint()
@@ -317,7 +275,6 @@ public class MainRoadGenerator : MonoBehaviour
             return false;
         }
 
-        // Destroy extras
         foreach (var sp in starts)
             if (sp != selected)
                 Destroy(sp);
@@ -327,7 +284,7 @@ public class MainRoadGenerator : MonoBehaviour
 
         if (!IsInBounds(roadData.start))
         {
-            Debug.LogError($"Start {roadData.start} out of grid bounds!");
+            Debug.LogError($"[MainRoadGenerator] Start {roadData.start} out of grid bounds!");
             return false;
         }
 
@@ -344,13 +301,13 @@ public class MainRoadGenerator : MonoBehaviour
             var gw = temple.transform.Find(gatewayChildName);
             if (gw == null)
             {
-                Debug.LogError($"No gateway in temple {temple.name}");
+                Debug.LogError($"[MainRoadGenerator] No gateway in temple {temple.name}");
                 continue;
             }
             var gp = WorldToGridPosition(gw.position);
             if (!IsInBounds(gp))
             {
-                Debug.LogError($"Gateway {gp} out of bounds");
+                Debug.LogError($"[MainRoadGenerator] Gateway {gp} out of bounds");
                 continue;
             }
             roadData.endPoints.Add(gp);
@@ -361,8 +318,12 @@ public class MainRoadGenerator : MonoBehaviour
 
     void CalculateMainRoad()
     {
-        grid[roadData.start.x, roadData.start.y].road = RoadType.MainRoad;
-        var full = new List<Vector2Int> { roadData.start };
+        // Mark the start cell as MainRoad (this will lazy‐init it in _cellDict)
+        var startCell = GetCellAt(roadData.start);
+        startCell.road = RoadType.MainRoad;
+
+        var fullList = new List<Vector2Int> { roadData.start };
+
         foreach (var end in roadData.endPoints)
         {
             var path = AStar.FindPath(
@@ -374,14 +335,19 @@ public class MainRoadGenerator : MonoBehaviour
             );
             if (path == null || path.Count == 0)
             {
-                Debug.LogError("No path found!");
+                Debug.LogError("[MainRoadGenerator] No path found to endpoint " + end);
                 continue;
             }
-            full.AddRange(path);
+
+            fullList.AddRange(path);
             foreach (var p in path)
-                grid[p.x, p.y].road = RoadType.MainRoad;
+            {
+                var c = GetCellAt(p);
+                c.road = RoadType.MainRoad;
+            }
         }
-        roadData.path = full.Distinct().ToArray();
+
+        roadData.path = fullList.Distinct().ToArray();
     }
 
     public List<Vector2Int> GetNeighbors(Vector2Int pos)
@@ -390,7 +356,13 @@ public class MainRoadGenerator : MonoBehaviour
         foreach (var d in Directions)
         {
             var n = pos + d;
-            if (IsInBounds(n)) list.Add(n);
+            if (!IsInBounds(n)) continue;
+
+            // Treat any cell classified as Water as impassable:
+            if (GetCellAt(n).terrain == TerrainType.Water)
+                continue;
+
+            list.Add(n);
         }
         return list;
     }
@@ -400,11 +372,19 @@ public class MainRoadGenerator : MonoBehaviour
 
     public void ClassifySegments()
     {
-        if (isClassified) return;
+        if (isClassified || grid == null) return;
+
         for (int x = 0; x < gridSize; x++)
+        {
             for (int y = 0; y < gridSize; y++)
+            {
                 if (grid[x, y].road == RoadType.MainRoad)
+                {
                     grid[x, y].segment = CalculateSegmentType(new Vector2Int(x, y));
+                }
+            }
+        }
+
         isClassified = true;
     }
 
@@ -413,6 +393,7 @@ public class MainRoadGenerator : MonoBehaviour
         var neigh = GetNeighbors(pos)
             .Where(n => grid[n.x, n.y].road != RoadType.None)
             .ToList();
+
         return neigh.Count switch
         {
             1 => RoadSegment.DeadEnd,
@@ -434,19 +415,20 @@ public class MainRoadGenerator : MonoBehaviour
         return new Vector2Int(gx, gy);
     }
 
+    // -------------------------------------------------------------------------
+    // Modified: Use the stored 'height' from each TerrainCell instead of re-sampling.
     public Vector3 GridToWorldPosition(Vector2Int gridPos)
     {
         float half = gridSize / 2f;
-        var p = new Vector3(gridPos.x - half,
-                            0,
-                            gridPos.y - half);
+        var p = new Vector3(
+            gridPos.x - half,
+            0,
+            gridPos.y - half
+        );
 
-        // sample the real terrain height here:
-        float rawHeight = SampleTerrainHeight(p);
-
-        // apply the same 20× scale your terrain GameObject has on Y:
-        p.y = rawHeight * 40f;
-
+        // subtract 0.4f to sink the road by 0.4 units:
+        float storedHeight = grid[gridPos.x, gridPos.y].height;
+        p.y = storedHeight - 0.4f;
         return p;
     }
 
@@ -455,5 +437,88 @@ public class MainRoadGenerator : MonoBehaviour
         roadData.endPoints = roadData.endPoints
             .OrderBy(e => Vector2Int.Distance(roadData.start, e))
             .ToList();
+    }
+
+    // -------------------------------------------------------------------------
+    // “Lazy initialization” helper. Creates a TerrainCell on first access,
+    // running a downward raycast from y=rayOriginY to y=rayTargetY. If no hit,
+    // classify as Water. Otherwise use the exact hit.point.y as 'height', and
+    // still apply steepThreshold on the sampled height to decide Flat/Steep.
+    private TerrainCell GetCellAt(Vector2Int pos)
+    {
+        if (_cellDict.TryGetValue(pos, out var existing))
+            return existing;
+
+        // --- Instead of calling GridToWorldPosition(pos), compute world X/Z directly:
+        float half = gridSize / 2f;
+        float worldX = pos.x - half;
+        float worldZ = pos.y - half;
+        Vector3 samplePoint = new Vector3(worldX, 0, worldZ);
+        float rawHeightMap = SampleTerrainHeight(samplePoint);
+
+        // Raycast from (worldX, rayOriginY, worldZ) down to (worldX, rayTargetY, worldZ):
+        Vector3 rayOrigin = new Vector3(worldX, rayOriginY, worldZ);
+        float rayDistance = rayOriginY - rayTargetY;
+
+        bool hitSomething = Physics.Raycast(rayOrigin, Vector3.down, out RaycastHit hitInfo, rayDistance);
+
+        TerrainType type;
+        float storedWorldY = rayTargetY; // fallback if no hit
+
+        if (!hitSomething)
+        {
+            type = TerrainType.Water;
+        }
+        else
+        {
+            storedWorldY = hitInfo.point.y;
+
+            // Decide Flat vs. Steep using rawHeightMap:
+            if (rawHeightMap > steepThreshold)
+                type = TerrainType.Steep;
+            else
+                type = TerrainType.Flat;
+        }
+
+        var newCell = new TerrainCell
+        {
+            height = storedWorldY,
+            terrain = type,
+            road = RoadType.None,
+            segment = RoadSegment.Straight
+        };
+
+        _cellDict[pos] = newCell;
+        return newCell;
+    }
+
+    // After A* finishes, build a full 2D array from all visited cells
+    private void BuildFullGridFromDictionary()
+    {
+        grid = new TerrainCell[gridSize, gridSize];
+
+        // First fill everything with a default “flat, no‐road” cell:
+        for (int x = 0; x < gridSize; x++)
+        {
+            for (int y = 0; y < gridSize; y++)
+            {
+                grid[x, y] = new TerrainCell
+                {
+                    height = 0f,
+                    terrain = TerrainType.Flat,
+                    road = RoadType.None,
+                    segment = RoadSegment.Straight
+                };
+            }
+        }
+
+        // Overwrite only the positions we actually “touched”:
+        foreach (var kv in _cellDict)
+        {
+            Vector2Int p = kv.Key;
+            if (p.x < 0 || p.y < 0 || p.x >= gridSize || p.y >= gridSize)
+                continue;
+            grid[p.x, p.y] = kv.Value;
+        }
     }
 }
