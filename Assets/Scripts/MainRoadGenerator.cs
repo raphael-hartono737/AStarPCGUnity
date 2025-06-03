@@ -38,7 +38,7 @@ public class MainRoadGenerator : MonoBehaviour
     public float rayTargetY = 37f;
 
     [Header("Grid Settings")]
-    public int gridSize = 250;
+    public int gridSize = 0;
     public float noiseScale = 0.1f;
 
     [Header("Pathfinding")]
