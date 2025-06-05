@@ -11,7 +11,7 @@ public class InteractionManager : MonoBehaviour
     private GameObject currentInteractable;
     [SerializeField] private Player player; 
     private string currentTag = "";
-    //[SerializeField] private GameObject berriesPrefab;
+    [SerializeField] private GameObject foodPrefab;
     //[SerializeField] private GameObject waterBottlePrefab; 
 
     void Start()
@@ -58,15 +58,18 @@ public class InteractionManager : MonoBehaviour
             case "Water":
                 Debug.Log("Drinking Water");
                 dropRate = UnityEngine.Random.Range(2, 100); 
-                player.DrinkWater(dropRate);
                 break;
 
             case "Food":
                 Debug.Log("Eating Food");
                 dropRate = UnityEngine.Random.Range(2, 25);
-                player.ConsumeFood(dropRate);
+                Debug.Log("Drop Rate: " + dropRate); 
+                if (dropRate <= 10)
+                {
+                    Instantiate(foodPrefab, player.transform.position, Quaternion.identity);
+                    Destroy(currentInteractable);
+                }
                 Destroy(currentInteractable);
-                Debug.Log("Player Consumed Food: " + dropRate); 
                 break;
 
             case "Door":
@@ -74,6 +77,35 @@ public class InteractionManager : MonoBehaviour
                 // Call your Door interaction logic here
                 break;
 
+            case "Note":
+                {
+                    // Attempt to find the NoteInteractable component on the current interactable
+                    var noteComp = currentInteractable.GetComponent<Notes>();
+                    if (noteComp != null)
+                    {
+                        noteComp.PickUpNote();
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"Interactable tagged 'Note' but missing NoteInteractable: {currentInteractable.name}");
+                    }
+                    break;
+                }
+
+            case "Key":
+                {
+                    var keyComp = currentInteractable.GetComponent<Keys>();
+                    if (keyComp != null)
+                    {
+                        keyComp.PickUpKey();
+                        Debug.Log("Collected the key");
+                    }
+                    else
+                    {
+                        Debug.LogWarning("invalid Keys");
+                    }
+                    break; 
+                }
             default:
                 Debug.LogWarning($"No interaction defined for tag: {currentTag}");
                 break;

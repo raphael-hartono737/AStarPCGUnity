@@ -9,6 +9,8 @@ TagManager:
   - StartPoint
   - Food
   - Water
+  - Note
+  - Key
   layers:
   - Default
   - TransparentFX

@@ -48,28 +48,33 @@ public static class AStar
             if (closedSet.Contains(current.Position))
                 continue;
 
+            // Mark as evaluated
             closedSet.Add(current.Position);
 
+            // Check goal
             if (current.Position == end)
                 return RetracePath(current);
 
+            // Explore neighbors
             foreach (var neighborPos in getNeighbors(current.Position))
             {
                 if (closedSet.Contains(neighborPos))
                     continue;
 
-                float tentativeG = current.GCost + getCost(current.Position, neighborPos);
+                float moveCost = getCost(current.Position, neighborPos);
+                float newG = current.GCost + moveCost;
 
-                if (!allNodes.TryGetValue(neighborPos, out var neighborNode) || tentativeG < neighborNode.GCost)
+                if (!allNodes.TryGetValue(neighborPos, out var neighborNode) || newG < neighborNode.GCost)
                 {
                     var newNode = new Node
                     {
                         Position = neighborPos,
-                        GCost = tentativeG,
+                        GCost = newG,
                         HCost = getHeuristic(neighborPos, end),
                         Parent = current
                     };
 
+                    // Replace existing node in open set if present
                     if (neighborNode != null)
                         openSet.Remove(neighborNode);
 
@@ -79,6 +84,7 @@ public static class AStar
             }
         }
 
+        // No path
         return new List<Vector2Int>();
     }
 
@@ -150,6 +156,7 @@ public class PriorityQueue<T>
         int li = data.Count - 1;
         data[idx] = data[li];
         data.RemoveAt(li);
+        // rebuild heap
         for (int i = data.Count / 2 - 1; i >= 0; i--)
             Heapify(i);
     }

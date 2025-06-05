@@ -1,9 +1,9 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
-using System.IO;    // ← needed for StreamWriter
 
 public static class MeshGenerator
 {
+
     public const int numSupportedLODs = 5;
     public const int numSupportedChunkSizes = 9;
     public const int numSupportedFlatshadedChunkSizes = 3;
@@ -12,42 +12,17 @@ public static class MeshGenerator
 
     public static MeshData GenerateTerrainMesh(float[,] heightMap, float heightMultiplier, AnimationCurve _heightCurve, int levelOfDetail, bool useFlatShading)
     {
-        // Copy the incoming curve so we don’t modify the original
         AnimationCurve heightCurve = new AnimationCurve(_heightCurve.keys);
 
-        // ────────────────────────────────────────────────────────────────────
-        // ← OPEN a StreamWriter to dump the entire heightMap as a grid.
-        //    By default this writes “Assets/heightData.csv”:
-        string csvPath = Path.Combine(Application.dataPath, "heightData.csv");
-        StreamWriter writer = new StreamWriter(csvPath);
-        // ────────────────────────────────────────────────────────────────────
+        int meshSimplificationIncrement = (levelOfDetail == 0) ? 1 : levelOfDetail * 2;
 
         int borderedSize = heightMap.GetLength(0);
-
-        // ────────────────────────────────────────────────────────────────────
-        // ← DUMP GRID: one CSV row per y, with comma-separated heights for x = 0..(borderedSize-1)
-        for (int y = 0; y < borderedSize; y++)
-        {
-            // Build a single line of CSV for this y
-            // (no header; just raw numbers)
-            System.Text.StringBuilder lineBuilder = new System.Text.StringBuilder();
-            for (int x = 0; x < borderedSize; x++)
-            {
-                float h = heightCurve.Evaluate(heightMap[x, y]) * heightMultiplier;
-                lineBuilder.Append(h.ToString());
-                if (x < borderedSize - 1)
-                    lineBuilder.Append(',');
-            }
-            writer.WriteLine(lineBuilder.ToString());
-        }
-        // ────────────────────────────────────────────────────────────────────
-
-        int meshSimplificationIncrement = (levelOfDetail == 0) ? 1 : levelOfDetail * 2;
         int meshSize = borderedSize - 2 * meshSimplificationIncrement;
         int meshSizeUnsimplified = borderedSize - 2;
 
         float topLeftX = (meshSizeUnsimplified - 1) / -2f;
         float topLeftZ = (meshSizeUnsimplified - 1) / 2f;
+
 
         int verticesPerLine = (meshSize - 1) / meshSimplificationIncrement + 1;
 
@@ -57,9 +32,6 @@ public static class MeshGenerator
         int meshVertexIndex = 0;
         int borderVertexIndex = -1;
 
-        // ────────────────────────────────────────────────────────────────────
-        // We no longer write inside these loops; grid was already dumped above.
-        // ────────────────────────────────────────────────────────────────────
         for (int y = 0; y < borderedSize; y += meshSimplificationIncrement)
         {
             for (int x = 0; x < borderedSize; x += meshSimplificationIncrement)
@@ -84,19 +56,10 @@ public static class MeshGenerator
             for (int x = 0; x < borderedSize; x += meshSimplificationIncrement)
             {
                 int vertexIndex = vertexIndicesMap[x, y];
-                Vector2 percent = new Vector2((x - meshSimplificationIncrement) / (float)meshSize,
-                                              (y - meshSimplificationIncrement) / (float)meshSize);
-
-                // ────────────────────────────────────────────────────────────────
-                // ORIGINAL height calc is untouched—even though we already dumped the CSV grid above:
+                Vector2 percent = new Vector2((x - meshSimplificationIncrement) / (float)meshSize, (y - meshSimplificationIncrement) / (float)meshSize);
                 float height = heightCurve.Evaluate(heightMap[x, y]) * heightMultiplier;
-                // ────────────────────────────────────────────────────────────────
+                Vector3 vertexPosition = new Vector3(topLeftX + percent.x * meshSizeUnsimplified, height, topLeftZ - percent.y * meshSizeUnsimplified);
 
-                Vector3 vertexPosition = new Vector3(
-                    topLeftX + percent.x * meshSizeUnsimplified,
-                    height,
-                    topLeftZ - percent.y * meshSizeUnsimplified
-                );
                 meshData.AddVertex(vertexPosition, percent, vertexIndex);
 
                 if (x < borderedSize - 1 && y < borderedSize - 1)
@@ -105,7 +68,6 @@ public static class MeshGenerator
                     int b = vertexIndicesMap[x + meshSimplificationIncrement, y];
                     int c = vertexIndicesMap[x, y + meshSimplificationIncrement];
                     int d = vertexIndicesMap[x + meshSimplificationIncrement, y + meshSimplificationIncrement];
-
                     meshData.AddTriangle(a, d, c);
                     meshData.AddTriangle(d, a, b);
                 }
@@ -116,12 +78,8 @@ public static class MeshGenerator
 
         meshData.ProcessMesh();
 
-        // ────────────────────────────────────────────────────────────────────
-        // ← CLOSE the writer (ensures CSV is flushed)
-        writer.Close();
-        // ────────────────────────────────────────────────────────────────────
-
         return meshData;
+
     }
 }
 
@@ -185,6 +143,7 @@ public class MeshData
 
     Vector3[] CalculateNormals()
     {
+
         Vector3[] vertexNormals = new Vector3[vertices.Length];
         int triangleCount = triangles.Length / 3;
         for (int i = 0; i < triangleCount; i++)
@@ -210,17 +169,27 @@ public class MeshData
 
             Vector3 triangleNormal = SurfaceNormalFromIndices(vertexIndexA, vertexIndexB, vertexIndexC);
             if (vertexIndexA >= 0)
+            {
                 vertexNormals[vertexIndexA] += triangleNormal;
+            }
             if (vertexIndexB >= 0)
+            {
                 vertexNormals[vertexIndexB] += triangleNormal;
+            }
             if (vertexIndexC >= 0)
+            {
                 vertexNormals[vertexIndexC] += triangleNormal;
+            }
         }
 
+
         for (int i = 0; i < vertexNormals.Length; i++)
+        {
             vertexNormals[i].Normalize();
+        }
 
         return vertexNormals;
+
     }
 
     Vector3 SurfaceNormalFromIndices(int indexA, int indexB, int indexC)
@@ -237,9 +206,13 @@ public class MeshData
     public void ProcessMesh()
     {
         if (useFlatShading)
+        {
             FlatShading();
+        }
         else
+        {
             BakeNormals();
+        }
     }
 
     void BakeNormals()
@@ -270,9 +243,14 @@ public class MeshData
         mesh.triangles = triangles;
         mesh.uv = uvs;
         if (useFlatShading)
+        {
             mesh.RecalculateNormals();
+        }
         else
+        {
             mesh.normals = bakedNormals;
+        }
         return mesh;
     }
+
 }

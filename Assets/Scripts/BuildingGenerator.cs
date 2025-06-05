@@ -133,10 +133,13 @@ public class BuildingGenerator : MonoBehaviour
 
     Vector3 CalculateWorldPosition(Vector2Int gridPos, Vector3Int size)
     {
+        // Get bottom-left world corner of the cell
         Vector3 origin = roadGenerator.GridToWorldPosition(gridPos);
+        // Center in grid-space: half extents
         Vector3 offset = new Vector3((size.x - 1) * 0.5f, 0, (size.z - 1) * 0.5f);
         Vector3 center = origin + offset;
 
+        // Raycast for Y
         Vector3 rayStart = center + Vector3.up * placementHeightCheck;
         if (Physics.Raycast(rayStart, Vector3.down, out RaycastHit hit, placementHeightCheck * 2))
         {
@@ -212,11 +215,13 @@ public class BuildingGenerator : MonoBehaviour
 
     bool CanPlaceBuilding(Vector2Int origin, Vector3Int size)
     {
+        // Boundary check
         if (origin.x < 0 || origin.y < 0 ||
             origin.x + size.x > grid.GetLength(0) ||
             origin.y + size.z > grid.GetLength(1))
             return false;
 
+        // Occupancy check
         for (int x = origin.x; x < origin.x + size.x; x++)
         {
             for (int y = origin.y; y < origin.y + size.z; y++)
@@ -236,6 +241,7 @@ public class BuildingGenerator : MonoBehaviour
         return false;
     }
 
+    // Provides reason why a building cannot be placed at the given position
     string GetInvalidReason(Vector2Int pos)
     {
         if (!roadGenerator.IsInBounds(pos))
@@ -246,6 +252,7 @@ public class BuildingGenerator : MonoBehaviour
             return "Occupied by building";
         return "Unknown";
     }
+
     #endregion
 
     #region Road Connection Logic
@@ -267,13 +274,7 @@ public class BuildingGenerator : MonoBehaviour
                         Vector2Int mirroredPos = GetMirroredPosition(currentPos);
                         bool valid = IsValidForBuilding(mirroredPos);
                         string reason = valid ? "Valid" : GetInvalidReason(mirroredPos);
-                        mirrorDebugLogs.Add(new MirrorDebugData
-                        {
-                            originalPos = currentPos,
-                            mirroredPos = mirroredPos,
-                            isValid = valid,
-                            reason = reason
-                        });
+                        mirrorDebugLogs.Add(new MirrorDebugData { originalPos = currentPos, mirroredPos = mirroredPos, isValid = valid, reason = reason });
                         if (valid) sites.Add(mirroredPos);
                         else sites.Add(currentPos);
                     }
