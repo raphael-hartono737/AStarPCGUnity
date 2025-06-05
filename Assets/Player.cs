@@ -14,14 +14,16 @@ public class Player : MonoBehaviour
     [SerializeField] public float playerHunger = 1000.0f;
     [SerializeField] public float playerHydrate = 1000.0f; 
     [SerializeField] private bool playerStarving;
-    private float maxHunger = 1000.0f;
-    private float maxHydrate = 1000.0f; 
+    public float maxHunger = 1000.0f;
+    public float maxHydrate = 1000.0f;
+
 
     [Header("Player Stats Multiplication")]
     [SerializeField] private float dehydrationAmount;
 
     [Header("Player Interact & Inventory Manager")]
     [SerializeField] private GameObject interactCollider;
+    [SerializeField] public GameObject InventoryMenu;
 
     [Header("Player Sliders")]
     [SerializeField] private Slider healthSlider;
@@ -170,16 +172,23 @@ public class Player : MonoBehaviour
         }
     }
 
-    public void ConsumeFood(float foodValue)
+    public void ChangeHunger(float foodValue)
     {
+        Debug.Log("Hunger: + " + foodValue); 
         playerHunger = Mathf.Clamp(playerHunger + foodValue, 0, maxHunger);
         UpdateSliders();
     }
 
-    public void DrinkWater(float waterValue)
+    public void ChangeHydration(float waterValue)
     {
+        Debug.Log("Hydration: + " + waterValue);
         playerHydrate = Mathf.Clamp(playerHydrate + waterValue, 0, maxHydrate);
         UpdateSliders();
+    }
+
+    public void OnAllKeysCollected()
+    {
+        Debug.Log("All Keys Collected!");
     }
 
 }

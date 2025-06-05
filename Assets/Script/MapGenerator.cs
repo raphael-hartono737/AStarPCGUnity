@@ -32,7 +32,7 @@ public class MapGenerator : MonoBehaviour
     [SerializeField]
     private GameObject generator_Mangrove;
     [SerializeField]
-    private GameObject generator_Palm;
+    private GameObject generator_Palm ;
     [SerializeField]
     private GameObject generator_Bush;
     [SerializeField]
@@ -47,6 +47,7 @@ public class MapGenerator : MonoBehaviour
         textureData.ApplyToMaterial(terrainMaterial);
         textureData.UpdateMeshHeights(terrainMaterial, terrainData.minHeight, terrainData.maxHeight);
         RequestMapData(Vector2.zero, OnMapDataReceived);
+
     }
 
     void OnMapDataReceived(MapData mapData)
@@ -69,35 +70,6 @@ public class MapGenerator : MonoBehaviour
     {
         yield return null;
         GenerateAllObjects();
-
-        // Ensure at least two Temples and one StartPoint are generated
-        int templeCount = GameObject.FindGameObjectsWithTag("Temple").Length;
-        bool startExists = GameObject.FindGameObjectsWithTag("StartPoint").Length > 0;
-
-        while (templeCount != 2 || !startExists)
-        {
-            if (templeCount != 2)
-            {
-                var tempGen = generator_Temple.GetComponent<PlacementGenerator>();
-                if (tempGen != null)
-                    tempGen.Generate();
-                else
-                    Debug.LogError("Missing PlacementGenerator on generator_Temple!");
-            }
-            if (!startExists)
-            {
-                var startGen = generator_StartPoint.GetComponent<PlacementGenerator>();
-                if (startGen != null)
-                    startGen.Generate();
-                else
-                    Debug.LogError("Missing PlacementGenerator on generator_StartPoint!");
-            }
-
-            // Re-check counts after generation
-            templeCount = GameObject.FindGameObjectsWithTag("Temple").Length;
-            startExists = GameObject.FindGameObjectsWithTag("StartPoint").Length > 0;
-        }
-
         OnMapGenerationComplete?.Invoke(); // Trigger event after generation
     }
 
@@ -105,11 +77,11 @@ public class MapGenerator : MonoBehaviour
     {
         PlacementGenerator[] generators = new PlacementGenerator[]
         {
-            generator_Mangrove.GetComponent<PlacementGenerator>(),
-            generator_Palm.GetComponent<PlacementGenerator>(),
-            generator_Bush.GetComponent<PlacementGenerator>(),
-            generator_Temple.GetComponent<PlacementGenerator>(),
-            generator_StartPoint.GetComponent<PlacementGenerator>()
+        generator_Mangrove.GetComponent<PlacementGenerator>(),
+        generator_Palm.GetComponent<PlacementGenerator>(),
+        generator_Bush.GetComponent<PlacementGenerator>(),
+        generator_Temple.GetComponent<PlacementGenerator>(),
+        generator_StartPoint.GetComponent<PlacementGenerator>()
         };
 
         foreach (var generator in generators)
@@ -165,8 +137,7 @@ public class MapGenerator : MonoBehaviour
         }
         else if (drawMode == DrawMode.Mesh)
         {
-            display.DrawMesh(MeshGenerator.GenerateTerrainMesh(mapData.heightMap, terrainData.meshHeightMultiplier,
-                terrainData.meshHeightCurve, editorPreviewLOD, terrainData.useFlatShading));
+            display.DrawMesh(MeshGenerator.GenerateTerrainMesh(mapData.heightMap, terrainData.meshHeightMultiplier, terrainData.meshHeightCurve, editorPreviewLOD, terrainData.useFlatShading));
         }
         else if (drawMode == DrawMode.FalloffMap)
         {
@@ -233,8 +204,7 @@ public class MapGenerator : MonoBehaviour
 
     public MapData GenerateMapData(Vector2 centre)
     {
-        float[,] noiseMap = Noise.GenerateNoiseMap(mapChunkSize + 2, mapChunkSize + 2, noiseData.seed,
-            noiseData.noiseScale, noiseData.octaves, noiseData.persistance, noiseData.lacunarity, centre + noiseData.offset);
+        float[,] noiseMap = Noise.GenerateNoiseMap(mapChunkSize + 2, mapChunkSize + 2, noiseData.seed, noiseData.noiseScale, noiseData.octaves, noiseData.persistance, noiseData.lacunarity, centre + noiseData.offset);
 
         if (terrainData.useFalloff)
         {
@@ -294,12 +264,14 @@ public class MapGenerator : MonoBehaviour
         }
 
     }
+
 }
 
 
 public struct MapData
 {
     public readonly float[,] heightMap;
+
 
     public MapData(float[,] heightMap)
     {
