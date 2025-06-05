@@ -6,14 +6,22 @@ using System.Collections.Generic;
 
 public class MapGenerator : MonoBehaviour
 {
+
     public enum DrawMode { NoiseMap, Mesh, FalloffMap };
     public DrawMode drawMode;
+
+    private int currentSeed; // Variabel baru untuk menyimpan seed acak
 
     public TerrainData terrainData;
     public NoiseData noiseData;
     public TextureData textureData;
 
     public Material terrainMaterial;
+
+    [Header("Quest Orb Settings")]
+    [SerializeField] private GameObject questOrbPrefab;
+    [SerializeField] private string questOrbTag = "QuestOrb";
+    [SerializeField] private float verticalOffset = 1.5f; // Tambahkan offset disini
 
     [Range(0, MeshGenerator.numSupportedChunkSizes - 1)]
     public int chunkSizeIndex;
@@ -38,16 +46,17 @@ public class MapGenerator : MonoBehaviour
     [SerializeField]
     private GameObject generator_Temple;
     [SerializeField]
-    private GameObject generator_StartPoint;
+    private GameObject generator_Pine;
+    [SerializeField]
+    private GameObject generator_Start; 
 
-    public static event Action OnMapGenerationComplete;
-
+    public static event System.Action OnMapGenerationComplete;
     void Awake()
     {
+        currentSeed = UnityEngine.Random.Range(1, 1001); // Perbaikan di sini
         textureData.ApplyToMaterial(terrainMaterial);
         textureData.UpdateMeshHeights(terrainMaterial, terrainData.minHeight, terrainData.maxHeight);
         RequestMapData(Vector2.zero, OnMapDataReceived);
-
     }
 
     void OnMapDataReceived(MapData mapData)
@@ -66,11 +75,79 @@ public class MapGenerator : MonoBehaviour
         StartCoroutine(GenerateObjectsAfterDelay());
     }
 
+    void SpawnQuestOrb()
+    {
+        Vector3 spawnPosition = FindValidQuestOrbPosition();
+        if (spawnPosition != Vector3.zero)
+        {
+            Instantiate(questOrbPrefab, spawnPosition, Quaternion.identity);
+        }
+        else
+        {
+            Debug.LogWarning("QuestOrb tidak ditempatkan: Posisi valid tidak ditemukan.");
+        }
+    }
+
+    Vector3 FindValidQuestOrbPosition()
+    {
+        int maxAttempts = 1000;
+        float mapWorldSize = (mapChunkSize - 1) * terrainData.uniformScale;
+        float halfMapSize = mapWorldSize / 2;
+
+        for (int i = 0; i < maxAttempts; i++)
+        {
+            float x = UnityEngine.Random.Range(-halfMapSize, halfMapSize);
+            float z = UnityEngine.Random.Range(-halfMapSize, halfMapSize);
+            Vector3 rayOrigin = new Vector3(x, 500, z);
+
+            RaycastHit hit;
+            if (Physics.Raycast(rayOrigin, Vector3.down, out hit, Mathf.Infinity))
+            {
+                float height = hit.point.y;
+                if (height >= 40 && height <= 47)
+                {
+                    float normalizedHeight = height / terrainData.meshHeightMultiplier;
+                    foreach (var layer in textureData.layers)
+                    {
+                        if (normalizedHeight >= layer.startHeight && normalizedHeight <= (layer.startHeight + layer.blendStrength))
+                        {
+                            // Tambahkan offset vertikal ke posisi Y
+                            Vector3 spawnPos = hit.point + Vector3.up * verticalOffset;
+                            return spawnPos;
+                        }
+                    }
+                }
+            }
+        }
+        return Vector3.zero;
+    }
+
+    void PlaceExistingQuestOrb()
+    {
+        GameObject questOrb = GameObject.FindGameObjectWithTag(questOrbTag);
+        if (questOrb != null)
+        {
+            Vector3 spawnPosition = FindValidQuestOrbPosition();
+            if (spawnPosition != Vector3.zero)
+            {
+                questOrb.transform.position = spawnPosition; // Pindahkan objek yang sudah ada
+            }
+            else
+            {
+                Debug.LogWarning("QuestOrb tidak dipindahkan: Posisi valid tidak ditemukan.");
+            }
+        }
+        else
+        {
+            Debug.LogError("QuestOrb tidak ditemukan di scene! Pastikan ada objek dengan tag " + questOrbTag);
+        }
+    }
+
     IEnumerator GenerateObjectsAfterDelay()
     {
         yield return null;
-        GenerateAllObjects();
-        OnMapGenerationComplete?.Invoke(); // Trigger event after generation
+        GenerateAllObjects(); 
+        OnMapGenerationComplete?.Invoke(); 
     }
 
     void GenerateAllObjects()
@@ -81,7 +158,8 @@ public class MapGenerator : MonoBehaviour
         generator_Palm.GetComponent<PlacementGenerator>(),
         generator_Bush.GetComponent<PlacementGenerator>(),
         generator_Temple.GetComponent<PlacementGenerator>(),
-        generator_StartPoint.GetComponent<PlacementGenerator>()
+        generator_Pine.GetComponent<PlacementGenerator>(),
+        generator_Start.GetComponent<PlacementGenerator>()
         };
 
         foreach (var generator in generators)
@@ -95,6 +173,8 @@ public class MapGenerator : MonoBehaviour
                 Debug.LogError("Missing PlacementGenerator component!");
             }
         }
+
+        PlaceExistingQuestOrb(); 
     }
 
     void OnValuesUpdated()
@@ -202,9 +282,18 @@ public class MapGenerator : MonoBehaviour
         }
     }
 
-    public MapData GenerateMapData(Vector2 centre)
+    MapData GenerateMapData(Vector2 centre)
     {
-        float[,] noiseMap = Noise.GenerateNoiseMap(mapChunkSize + 2, mapChunkSize + 2, noiseData.seed, noiseData.noiseScale, noiseData.octaves, noiseData.persistance, noiseData.lacunarity, centre + noiseData.offset);
+        float[,] noiseMap = Noise.GenerateNoiseMap(
+            mapChunkSize + 2,
+            mapChunkSize + 2,
+            currentSeed, // Gunakan currentSeed, bukan noiseData.seed
+            noiseData.noiseScale,
+            noiseData.octaves,
+            noiseData.persistance,
+            noiseData.lacunarity,
+            centre + noiseData.offset
+        );
 
         if (terrainData.useFalloff)
         {

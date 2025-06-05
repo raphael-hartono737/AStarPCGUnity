@@ -1,6 +1,6 @@
 using System;
 using UnityEngine;
-using Cinemachine; 
+using Cinemachine;
 
 namespace UnityStandardAssets.Characters.FirstPerson
 {
@@ -11,10 +11,10 @@ namespace UnityStandardAssets.Characters.FirstPerson
         [SerializeField]
         public CinemachineVirtualCamera virtualCamera; // Reference to the virtual camera
         private CinemachineBasicMultiChannelPerlin noise;
-        private float shakeDuration; 
+        private float shakeDuration;
         private float shakeAmplitude;
         private float shakeFrequency;
-        private float shakeTimer; 
+        private float shakeTimer;
 
 
 
@@ -99,7 +99,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private Vector3 m_GroundContactNormal;
         private bool m_Jump, m_PreviouslyGrounded, m_Jumping, m_IsGrounded;
 
-        
+
 
 
         public Vector3 Velocity
@@ -197,7 +197,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 {
                     m_RigidBody.AddForce(desiredMove * SlopeMultiplier(), ForceMode.Impulse);
                 }
-                TriggerShake(); 
+                TriggerShake();
             }
 
             if (m_IsGrounded)
@@ -230,7 +230,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
         private void TriggerShake()
         {
-            shakeTimer = shakeDuration; 
+            shakeTimer = shakeDuration;
         }
         private float SlopeMultiplier()
         {

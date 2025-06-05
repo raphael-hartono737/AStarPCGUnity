@@ -11,7 +11,8 @@ public class NoiseData : UpdatableData
     public float persistance;
     public float lacunarity;
 
-    public int seed;
+    // Hapus baris berikut
+    // public int seed;
     public Vector2 offset;
 
 #if UNITY_EDITOR

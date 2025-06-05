@@ -5,7 +5,13 @@ public class MainMenu : MonoBehaviour
 {
     public void PlayGame()
     {
-        SceneManager.LoadSceneAsync(1);
+        // Memuat scene video (scene index 1)
+        SceneManager.LoadSceneAsync("OpeningVideo");
     }
 
+    public void QuitGame()
+    {
+        Debug.Log("Keluar dari game...");
+        Application.Quit();
+    }
 }
