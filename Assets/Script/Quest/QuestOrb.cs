@@ -19,6 +19,14 @@ public class QuestOrb : MonoBehaviour
     public Waypoint waypoint;
     public Text questComplete;
 
+    private void Awake()
+    {
+        GameObject playerGO = GameObject.FindGameObjectWithTag("Player");
+        Transform playerUITransform = playerGO.transform.Find("PlayerUI");
+
+        waypoint = playerUITransform.Find("WayPoint").GetComponent<Waypoint>();
+        questComplete = playerUITransform.Find("QuestComplete").GetComponent<Text>();
+    }
     private void Start()
     {
         // Set batas maksimal quest secara random

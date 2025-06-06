@@ -10,6 +10,12 @@ public class Waypoint : MonoBehaviour
     Image sprite;
     Camera cam;
 
+    private void Awake()
+    {
+        GameObject QuestPoint = GameObject.Find("QuestPoint");
+        Transform questPointTransform = QuestPoint.transform;
+        target = questPointTransform; 
+    }
     private void Start()
     {
         cam = Camera.main;
