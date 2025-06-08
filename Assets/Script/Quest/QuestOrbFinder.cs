@@ -7,7 +7,7 @@ public class QuestOrbFinder : MonoBehaviour
     [SerializeField] private TerrainData terrainData;
     [SerializeField] private TextureData textureData;
     [SerializeField] private MapGenerator mapGenerator;
-    [SerializeField] private float verticalOffset = 1.5f;
+    [SerializeField] private float verticalOffset = 0.5f;
     [SerializeField] private string questOrbTag;
     [SerializeField] private GameObject questOrbPrefab; 
     private int mapChunkSize;
@@ -16,7 +16,7 @@ public class QuestOrbFinder : MonoBehaviour
 
     void OnEnable()
     {
-        RoadGenerationEvents.OnRoadGenerationComplete += HandleMapGenerationComplete;
+        GameManager.OnGameManagerComplete += HandleMapGenerationComplete;
     }
     private void HandleMapGenerationComplete()
     {
@@ -26,7 +26,7 @@ public class QuestOrbFinder : MonoBehaviour
 
     void OnDisable()
     {
-        RoadGenerationEvents.OnRoadGenerationComplete -= HandleMapGenerationComplete; 
+        GameManager.OnGameManagerComplete -= HandleMapGenerationComplete; 
     }
 
     void TryPlacingQuestOrbs()

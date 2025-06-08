@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -7,26 +7,34 @@ public class GameManager : MonoBehaviour
 {
     [Header("Initilization")]
     [SerializeField] private GameObject player;
-    [SerializeField] private GameObject portLocation;
+    [SerializeField] private Transform portLocation;
     [SerializeField] private MapGenerator mapGenerator;
+    [SerializeField] private MainRoadGenerator roadGen;
+    public static event System.Action OnGameManagerComplete; 
 
     void OnEnable()
     {
-        QuestOrbFinder.questOrbFinderComplete += HandleGameInitialization;
+        RoadGenerationEvents.OnRoadGenerationComplete += HandleGameInitialization;
     }
 
     void OnDisable()
     {
-        QuestOrbFinder.questOrbFinderComplete -= HandleGameInitialization;
+        RoadGenerationEvents.OnRoadGenerationComplete -= HandleGameInitialization;
     }
     void HandleGameInitialization()
     {
-        portLocation = GameObject.FindGameObjectWithTag("StartPoint"); 
-        if (portLocation != null)
+        if (roadGen != null)
         {
-            Vector3 basePos = portLocation.transform.position;
-            Vector3 spawnPos = basePos + new Vector3(0f, 2f, 0f); 
+            portLocation = roadGen.selected.transform;
+            Debug.Log($"[GameManager] Found StartPoint at world-position {portLocation.position}");
+            Vector3 spawnPos = portLocation.position + new Vector3(0f, 2f, 0f);
+            Debug.Log($"[GameManager] About to Instantiate player at spawnPos = {spawnPos}");
             Instantiate(player, spawnPos, Quaternion.identity);
+            OnGameManagerComplete?.Invoke(); 
+        }
+        else
+        {
+            Debug.Log("Game Manager: Start Point is not found!");
         }
         if (player == null)
         {

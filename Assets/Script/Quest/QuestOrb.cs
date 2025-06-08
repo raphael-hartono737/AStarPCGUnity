@@ -15,9 +15,10 @@ public class QuestOrb : MonoBehaviour
     private int questsCompleted = 0;
     private bool allQuestsFinished = false;
 
-
+    [SerializeField] private InteractionManager interactionManager;
     public Waypoint waypoint;
     public Text questComplete;
+    [SerializeField] private GameObject findQuestMasterUI; 
 
     private void Awake()
     {
@@ -25,7 +26,18 @@ public class QuestOrb : MonoBehaviour
         Transform playerUITransform = playerGO.transform.Find("PlayerUI");
 
         waypoint = playerUITransform.Find("WayPoint").GetComponent<Waypoint>();
+        if (waypoint == null)
+        {
+            waypoint = GameObject.Find("Player/PlayerUI/WayPoint").GetComponent<Waypoint>();
+        }
         questComplete = playerUITransform.Find("QuestComplete").GetComponent<Text>();
+        if (questComplete == null)
+        {
+            questComplete = GameObject.Find("Player/PlayerUI/QuestComplete").GetComponent<Text>();
+        }
+        interactionManager = FindObjectOfType<InteractionManager>();
+        if (interactionManager == null)
+            Debug.Log("No InteractionManager in scene!");
     }
     private void Start()
     {
@@ -67,38 +79,48 @@ public class QuestOrb : MonoBehaviour
         }
     }
 
-    private void OnTriggerStay(Collider other)
+    private void OnTriggerEnter(Collider other)
     {
-        // Hanya aktif jika belum mencapai limit quest
-        if (allQuestsFinished) return;
+        if (other.CompareTag("Player"))
+            interactionManager.SetCurrentInteractable(this.gameObject, "questOrbTag");
+    }
 
-        if (currentQuest == null && other.CompareTag("Player") && Input.GetButtonDown("Use"))
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Player"))
+            interactionManager.ClearCurrentInteractable();
+    }
+
+    public void TryAssignQuest()
+    {
+        if (allQuestsFinished || currentQuest != null)
+            return;
+
+        int questIndex = (DebugIndex >= questPrefabs.Length || DebugIndex < 0)
+                         ? Random.Range(0, questPrefabs.Length)
+                         : DebugIndex;
+
+        GameObject questGO;
+        if (questPrefabs[questIndex].transform.parent != null)
         {
-            int questIndex = (DebugIndex >= questPrefabs.Length || DebugIndex < 0) ?
-                Random.Range(0, questPrefabs.Length) : DebugIndex;
-
-            if (questPrefabs[questIndex].transform.parent != null)
-            {
-                currentQuest = questPrefabs[questIndex].GetComponent<QuestBase>();
-                currentQuest.Initiate();
-            }
-            else
-            {
-                Transform point = questPoints[Random.Range(0, questPoints.Length)];
-                GameObject quest = Instantiate(questPrefabs[questIndex], point.position, Quaternion.identity);
-                quest.transform.SetParent(point);
-                currentQuest = quest.GetComponent<QuestBase>();
-                currentQuest.Initiate();
-            }
+            currentQuest = questPrefabs[questIndex].GetComponent<QuestBase>();
+            currentQuest.Initiate();
+        }
+        else
+        {
+            Transform point = questPoints[Random.Range(0, questPoints.Length)];
+            questGO = Instantiate(questPrefabs[questIndex], point.position, Quaternion.identity);
+            questGO.transform.SetParent(point);
+            currentQuest = questGO.GetComponent<QuestBase>();
+            currentQuest.Initiate();
         }
     }
 
     private void OnGUI()
     {
-        // Hanya tampilkan GUI jika belum menyelesaikan semua quest
         if (!allQuestsFinished && currentQuest == null)
         {
-            GUI.Label(new Rect(10, 10, 300, 20), "Find the Quest Master for a new quest!");
+            findQuestMasterUI.SetActive(true); 
         }
     }
 

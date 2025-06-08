@@ -12,7 +12,11 @@ public class InventoryManager : MonoBehaviour
     [SerializeField] private ItemSlot[] itemSlot;
     [SerializeField] private NotesSlot[] notesSlot; 
     [SerializeField] private KeySlot[] keysSlot;
-    [SerializeField] private GameObject PlayerUI;
+    [Header("Player's UI")]
+    [SerializeField] private GameObject playerHunger;
+    [SerializeField] private GameObject playerHydration;
+    [SerializeField] private GameObject playerHealthBar;
+
     [SerializeField] private int countKeys;
     [SerializeField] private Player player; 
 
@@ -28,7 +32,9 @@ public class InventoryManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        PlayerUI = GameObject.Find("PlayerUI");
+        playerHunger = GameObject.Find("Hunger");
+        playerHydration = GameObject.Find("Hydration");
+        playerHealthBar = GameObject.Find("HealthBar");
         player = GameObject.Find("Player").GetComponent<Player>();
         countKeys = 0; 
     }
@@ -37,7 +43,9 @@ public class InventoryManager : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.I) && menuActivated)
         {
-            PlayerUI.SetActive(true);
+            playerHunger.SetActive(true);
+            playerHydration.SetActive(true);
+            playerHealthBar.SetActive(true);
             Time.timeScale = 1;
             DisableCursor(); 
             InventoryMenu.SetActive(false);
@@ -49,7 +57,9 @@ public class InventoryManager : MonoBehaviour
         }
         else if (Input.GetKeyDown(KeyCode.I) && !menuActivated)
         {
-            PlayerUI.SetActive(false);
+            playerHunger.SetActive(false);
+            playerHydration.SetActive(false);
+            playerHealthBar.SetActive(false);
             Time.timeScale = 0;
             EnableCursor(); 
             InventoryMenu.SetActive(true);

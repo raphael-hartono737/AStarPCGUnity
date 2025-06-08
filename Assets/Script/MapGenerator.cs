@@ -18,10 +18,10 @@ public class MapGenerator : MonoBehaviour
 
     public Material terrainMaterial;
 
-    [Header("Quest Orb Settings")]
-    [SerializeField] private GameObject questOrbPrefab;
-    [SerializeField] private string questOrbTag = "QuestOrb";
-    [SerializeField] private float verticalOffset = 1.5f; // Tambahkan offset disini
+    //[Header("Quest Orb Settings")]
+    //[SerializeField] private GameObject questOrbPrefab;
+    //[SerializeField] private string questOrbTag = "QuestOrb";
+    //[SerializeField] private float verticalOffset = 1.5f; // Tambahkan offset disini
 
     [Range(0, MeshGenerator.numSupportedChunkSizes - 1)]
     public int chunkSizeIndex;

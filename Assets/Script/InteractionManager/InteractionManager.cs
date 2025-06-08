@@ -7,7 +7,7 @@ public class InteractionManager : MonoBehaviour
 {
     public TextMeshProUGUI interactPrompt; // Assign in Inspector
     public KeyCode interactKey = KeyCode.E;
-
+    [SerializeField] private GameObject interactionpromptGO; 
     private GameObject currentInteractable;
     [SerializeField] private Player player; 
     private string currentTag = "";
@@ -17,6 +17,15 @@ public class InteractionManager : MonoBehaviour
     void Start()
     {
         GameObject playerGO = GameObject.FindGameObjectWithTag("Player");
+        interactionpromptGO = GameObject.Find("PlayerUI/InteractPrompt");
+        if (interactionpromptGO != null)
+        {
+            interactPrompt = interactionpromptGO.GetComponent<TextMeshProUGUI>();
+        }
+        else
+        {
+            Debug.Log("Interaction Prompt is null!");
+        }
         if (playerGO != null)
         {
             player = playerGO.GetComponent<Player>();
@@ -55,6 +64,14 @@ public class InteractionManager : MonoBehaviour
         int dropRate = 0; 
         switch (currentTag)
         {
+            case "questOrbTag":
+                var orb = currentInteractable.GetComponent<QuestOrb>();
+                if (orb != null)
+                    orb.TryAssignQuest();
+                else
+                    Debug.LogWarning("Interactable tagged QuestOrb has no QuestOrb component");
+                break;
+
             case "Water":
                 Debug.Log("Drinking Water");
                 dropRate = UnityEngine.Random.Range(2, 100); 

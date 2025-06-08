@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &6560908191065444813
+--- !u!1 &7851784673743381469
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,13 +8,14 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 7401983591906437082}
-  - component: {fileID: 3989552188290446796}
-  - component: {fileID: 5512219770412080207}
-  - component: {fileID: 4733145296353402429}
-  - component: {fileID: 7892683418937173594}
-  - component: {fileID: 3160125107597337402}
-  - component: {fileID: 8829744739539327090}
+  - component: {fileID: 8818217836745623405}
+  - component: {fileID: 1925870866017420184}
+  - component: {fileID: 3058807072509390111}
+  - component: {fileID: 5414756892182572171}
+  - component: {fileID: 6729675422221317506}
+  - component: {fileID: 4633788296763928273}
+  - component: {fileID: 5261824317041867857}
+  - component: {fileID: 3683716837443362598}
   m_Layer: 0
   m_Name: NPC_Joko
   m_TagString: Untagged
@@ -22,37 +23,36 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &7401983591906437082
+--- !u!4 &8818217836745623405
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6560908191065444813}
+  m_GameObject: {fileID: 7851784673743381469}
   serializedVersion: 2
   m_LocalRotation: {x: -0.7071068, y: 0, z: 0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 2247614601904677902}
+  m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: -90, y: 0, z: 0}
---- !u!33 &3989552188290446796
+--- !u!33 &1925870866017420184
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6560908191065444813}
+  m_GameObject: {fileID: 7851784673743381469}
   m_Mesh: {fileID: -8678823145569952518, guid: 22826d08c6f289a4fb13e17b7bd30926, type: 3}
---- !u!23 &5512219770412080207
+--- !u!23 &3058807072509390111
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6560908191065444813}
+  m_GameObject: {fileID: 7851784673743381469}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -89,13 +89,13 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &4733145296353402429
+--- !u!65 &5414756892182572171
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6560908191065444813}
+  m_GameObject: {fileID: 7851784673743381469}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -110,13 +110,13 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.13924386, y: 0.04548524, z: 0.23555157}
   m_Center: {x: 0, y: 0.0010157097, z: -0.0016532056}
---- !u!135 &7892683418937173594
+--- !u!135 &6729675422221317506
 SphereCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6560908191065444813}
+  m_GameObject: {fileID: 7851784673743381469}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -131,69 +131,37 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.11777581
   m_Center: {x: 0, y: 0.00101571, z: -0.001653206}
---- !u!114 &3160125107597337402
+--- !u!114 &4633788296763928273
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6560908191065444813}
+  m_GameObject: {fileID: 7851784673743381469}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e43802c48c6ebbf44b7974caf83ca327, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &8829744739539327090
+--- !u!114 &5261824317041867857
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6560908191065444813}
+  m_GameObject: {fileID: 7851784673743381469}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e1a90849cbdb9c94881882c964190a35, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!1 &8222796796070345556
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2247614601904677902}
-  - component: {fileID: 7634808145512557439}
-  m_Layer: 0
-  m_Name: Chat_Joko
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2247614601904677902
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8222796796070345556}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 7401983591906437082}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &7634808145512557439
+--- !u!114 &3683716837443362598
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8222796796070345556}
+  m_GameObject: {fileID: 7851784673743381469}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7c35ed0f2ae3df74992ce64ae4b38c59, type: 3}
@@ -201,5 +169,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   questText: Speak to Joko
   permanentQuest: 0
-  questObject: {fileID: 6560908191065444813}
+  questObject: {fileID: 7851784673743381469}
   isComplete: 0

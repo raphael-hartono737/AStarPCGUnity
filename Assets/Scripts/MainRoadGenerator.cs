@@ -61,6 +61,7 @@ public class MainRoadGenerator : MonoBehaviour
 
     [SerializeField] private MapGenerator mapGenerator;
     [SerializeField] private EndlessTerrain endlessTerrain;
+    public GameObject selected; 
 
     [Header("Grid Visualization")]
     public bool showGrid = true;
@@ -242,7 +243,7 @@ public class MainRoadGenerator : MonoBehaviour
     {
         var starts = GameObject.FindGameObjectsWithTag(startPointTag);
         var temples = GameObject.FindGameObjectsWithTag(templeTag);
-        GameObject selected = null;
+        selected = null;
         float maxAvgDist = -1f;
 
         foreach (var sp in starts)
