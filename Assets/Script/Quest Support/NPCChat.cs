@@ -5,27 +5,38 @@ using UnityEngine;
 public class NPCChat : MonoBehaviour
 {
     QuestObject questObj;
+    private InteractionManager interactionManager;
 
     void Start()
     {
         questObj = GetComponent<QuestObject>();
+        interactionManager = FindObjectOfType<InteractionManager>();
     }
 
-
-    private void OnTriggerStay(Collider other)
+    private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player") && Input.GetButtonDown("Use"))
+        if (other.CompareTag("Player"))
+            interactionManager.SetCurrentInteractable(gameObject, "NPC");
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Player"))
+            interactionManager.ClearCurrentInteractable();
+    }
+
+    public void TryChat()
+    {
+        Debug.Log("Interacted!");
+        if (questObj.HasQuest())
         {
-            if (questObj.HasQuest())
-            {
-                questObj.AdvanceQuest();
-                //show quest dialog
-            }
-            else
-            {
-                //show random npc dialog
-            }
-            
+            questObj.AdvanceQuest();
+            Destroy(this.gameObject); 
+        }
+        else
+        {
+            Debug.Log("No Quests in this NPC!");
         }
     }
+
 }

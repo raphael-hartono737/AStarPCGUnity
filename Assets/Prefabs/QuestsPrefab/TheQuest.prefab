@@ -428,6 +428,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 8897761852115590945}
+  maxDistance: 2500
+  viewDotThresh: 0.2
 --- !u!1 &3360466845642433089
 GameObject:
   m_ObjectHideFlags: 0
@@ -920,7 +922,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4edb05ba3fdff844aaea80d241fda7ef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  DebugIndex: -2
+  DebugIndex: -1
   questPrefabs:
   - {fileID: 6392334023196348216, guid: eadce2c082101a342a381ad8849dd385, type: 3}
   - {fileID: 7851784673743381469, guid: 23f000d192ad4c440821bd1272364f75, type: 3}

@@ -42,8 +42,16 @@ public class SingleQuest : QuestBase
         Debug.Log("Quest Complete!");
     }
 
-    private void OnGUI()
+    private void Update()
     {
-        if (!isComplete) GUI.Label(new Rect(10, 10, 300, 20), "Quest: " + questText);
+        if (!isComplete) 
+        {
+            questTextDisplay.text = questText;
+        }
+        else
+        {
+            questTextDisplay.text = null;
+            questTextDisplay.gameObject.SetActive(false);
+        }
     }
 }

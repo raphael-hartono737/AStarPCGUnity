@@ -10,6 +10,7 @@ public class QuestOrb : MonoBehaviour
     public GameObject[] questPrefabs;
     public Transform[] questPoints;
     [SerializeField] QuestBase currentQuest;
+    [SerializeField] private SphereCollider questActivation; 
 
     [SerializeField] private int maxQuests = 10;
     private int questsCompleted = 0;
@@ -43,6 +44,7 @@ public class QuestOrb : MonoBehaviour
     {
         // Set batas maksimal quest secara random
         maxQuests = Random.Range(5, 11);
+        //questPoints = GameObject.FindGameObjectWithTag("questLoc"); 
     }
 
     private void Update()
@@ -76,6 +78,15 @@ public class QuestOrb : MonoBehaviour
         else if (!allQuestsFinished)
         {
             waypoint.target = transform;
+            
+        }
+        if (/*!allQuestsFinished && */currentQuest == null)
+        {
+            findQuestMasterUI.SetActive(true);
+        }
+        else
+        {
+            findQuestMasterUI.SetActive(false);
         }
     }
 
@@ -94,8 +105,10 @@ public class QuestOrb : MonoBehaviour
     public void TryAssignQuest()
     {
         if (allQuestsFinished || currentQuest != null)
+        {
             return;
 
+        }
         int questIndex = (DebugIndex >= questPrefabs.Length || DebugIndex < 0)
                          ? Random.Range(0, questPrefabs.Length)
                          : DebugIndex;
@@ -103,24 +116,25 @@ public class QuestOrb : MonoBehaviour
         GameObject questGO;
         if (questPrefabs[questIndex].transform.parent != null)
         {
+            Debug.Log("Yes 1");
             currentQuest = questPrefabs[questIndex].GetComponent<QuestBase>();
             currentQuest.Initiate();
         }
         else
         {
+            Debug.Log("Yes 2");
             Transform point = questPoints[Random.Range(0, questPoints.Length)];
             questGO = Instantiate(questPrefabs[questIndex], point.position, Quaternion.identity);
+
+            //Debug.Log($"Instantiated: {questGO.name} at {point.position}");
+
             questGO.transform.SetParent(point);
             currentQuest = questGO.GetComponent<QuestBase>();
+            if (currentQuest == null)
+            {
+                Debug.Log("currentQuest: null!");
+            }
             currentQuest.Initiate();
-        }
-    }
-
-    private void OnGUI()
-    {
-        if (!allQuestsFinished && currentQuest == null)
-        {
-            findQuestMasterUI.SetActive(true); 
         }
     }
 

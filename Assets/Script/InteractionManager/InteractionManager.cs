@@ -64,6 +64,15 @@ public class InteractionManager : MonoBehaviour
         int dropRate = 0; 
         switch (currentTag)
         {
+            case "NPC":
+                Debug.Log("NPC Collides!");
+                var npcChat = currentInteractable.GetComponent<NPCChat>();
+                if (npcChat != null)
+                    npcChat.TryChat();
+                else
+                    Debug.LogWarning("Interactable tagged 'NPC' has no NPCChat component");
+                break;
+
             case "questOrbTag":
                 var orb = currentInteractable.GetComponent<QuestOrb>();
                 if (orb != null)

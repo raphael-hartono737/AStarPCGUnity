@@ -48,7 +48,9 @@ public class MapGenerator : MonoBehaviour
     [SerializeField]
     private GameObject generator_Pine;
     [SerializeField]
-    private GameObject generator_Start; 
+    private GameObject generator_Start;
+    [SerializeField]
+    private GameObject generator_questLoc; 
 
     public static event System.Action OnMapGenerationComplete;
     void Awake()
@@ -159,7 +161,8 @@ public class MapGenerator : MonoBehaviour
         generator_Bush.GetComponent<PlacementGenerator>(),
         generator_Temple.GetComponent<PlacementGenerator>(),
         generator_Pine.GetComponent<PlacementGenerator>(),
-        generator_Start.GetComponent<PlacementGenerator>()
+        generator_Start.GetComponent<PlacementGenerator>(),
+        generator_questLoc.GetComponent<PlacementGenerator>()
         };
 
         foreach (var generator in generators)

@@ -11,6 +11,9 @@ TagManager:
   - Water
   - Note
   - Key
+  - questOrbTag
+  - questLoc
+  - NPC
   layers:
   - Default
   - TransparentFX
