@@ -14,6 +14,8 @@ TagManager:
   - questOrbTag
   - questLoc
   - NPC
+  - Gateway
+  - NyiRoroKidul
   layers:
   - Default
   - TransparentFX

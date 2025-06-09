@@ -3,6 +3,7 @@ using System.Collections;
 using System;
 using System.Threading;
 using System.Collections.Generic;
+using Palmmedia.ReportGenerator.Core;
 
 public class MapGenerator : MonoBehaviour
 {
@@ -40,7 +41,7 @@ public class MapGenerator : MonoBehaviour
     [SerializeField]
     private GameObject generator_Mangrove;
     [SerializeField]
-    private GameObject generator_Palm ;
+    private GameObject generator_Palm;
     [SerializeField]
     private GameObject generator_Bush;
     [SerializeField]
@@ -146,8 +147,8 @@ public class MapGenerator : MonoBehaviour
     IEnumerator GenerateObjectsAfterDelay()
     {
         yield return null;
-        GenerateAllObjects(); 
-        OnMapGenerationComplete?.Invoke(); 
+        GenerateAllObjects();
+        OnMapGenerationComplete?.Invoke();
     }
 
     void GenerateAllObjects()
@@ -157,10 +158,28 @@ public class MapGenerator : MonoBehaviour
         generator_Mangrove.GetComponent<PlacementGenerator>(),
         generator_Palm.GetComponent<PlacementGenerator>(),
         generator_Bush.GetComponent<PlacementGenerator>(),
-        generator_Temple.GetComponent<PlacementGenerator>(),
         generator_Pine.GetComponent<PlacementGenerator>(),
-        generator_Start.GetComponent<PlacementGenerator>()
         };
+
+
+        if (generator_Temple != null)
+        {
+            TempleGenerator templeGenerator = generator_Temple.GetComponent<TempleGenerator>();
+            templeGenerator.GenerateTemples();
+        }
+        else
+        {
+            Debug.LogError("Missing TempleGenerator component!");
+        }
+        if (generator_Start != null)
+        {
+            StartPointGenerator startGenerator = generator_Start.GetComponent<StartPointGenerator>();
+            startGenerator.GenerateStartPoint();
+        }
+        else
+        {
+            Debug.LogError("Missing StartPoint component!");
+        }
 
         foreach (var generator in generators)
         {
