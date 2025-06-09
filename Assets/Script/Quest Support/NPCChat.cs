@@ -16,7 +16,9 @@ public class NPCChat : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
+        {
             interactionManager.SetCurrentInteractable(gameObject, "NPC");
+        }
     }
 
     private void OnTriggerExit(Collider other)
@@ -31,7 +33,6 @@ public class NPCChat : MonoBehaviour
         if (questObj.HasQuest())
         {
             questObj.AdvanceQuest();
-            Destroy(this.gameObject); 
         }
         else
         {

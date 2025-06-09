@@ -65,10 +65,12 @@ public class InteractionManager : MonoBehaviour
         switch (currentTag)
         {
             case "NPC":
-                Debug.Log("NPC Collides!");
                 var npcChat = currentInteractable.GetComponent<NPCChat>();
                 if (npcChat != null)
+                {
                     npcChat.TryChat();
+                    Destroy(npcChat);
+                }
                 else
                     Debug.LogWarning("Interactable tagged 'NPC' has no NPCChat component");
                 break;
@@ -76,7 +78,9 @@ public class InteractionManager : MonoBehaviour
             case "questOrbTag":
                 var orb = currentInteractable.GetComponent<QuestOrb>();
                 if (orb != null)
+                {
                     orb.TryAssignQuest();
+                }
                 else
                     Debug.LogWarning("Interactable tagged QuestOrb has no QuestOrb component");
                 break;

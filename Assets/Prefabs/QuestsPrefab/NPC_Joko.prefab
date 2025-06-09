@@ -247,11 +247,11 @@ GameObject:
   - component: {fileID: 8818217836745623405}
   - component: {fileID: 1925870866017420184}
   - component: {fileID: 3058807072509390111}
-  - component: {fileID: 5414756892182572171}
   - component: {fileID: 6729675422221317506}
   - component: {fileID: 4633788296763928273}
   - component: {fileID: 5261824317041867857}
   - component: {fileID: 3683716837443362598}
+  - component: {fileID: 5960823648049637558}
   m_Layer: 0
   m_Name: NPC_Joko
   m_TagString: NPC
@@ -326,27 +326,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &5414756892182572171
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7851784673743381469}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.13924386, y: 0.04548524, z: 0.23555157}
-  m_Center: {x: 0, y: 0.0010157097, z: -0.0016532056}
 --- !u!135 &6729675422221317506
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -366,7 +345,7 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 0.11777581
+  m_Radius: 0.5
   m_Center: {x: 0, y: 0.00101571, z: -0.001653206}
 --- !u!114 &4633788296763928273
 MonoBehaviour:
@@ -406,6 +385,33 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   questText: Speak to Joko
   questTextDisplay: {fileID: 833828109483707624}
-  permanentQuest: 0
+  permanentQuest: 1
   questObject: {fileID: 7851784673743381469}
-  isComplete: 0
+  isComplete: 1
+--- !u!54 &5960823648049637558
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7851784673743381469}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 126
+  m_CollisionDetection: 0
