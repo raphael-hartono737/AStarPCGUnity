@@ -120,6 +120,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   notesName: Captain Notes 1
   notesIcon: {fileID: 0}
-  notesDescription: For years, I have been searching for the Lost Island of Nyi Roro
-    Kidul. I have been through all the Seas of Java and still couldn't find her island.
-    Maybe if I sacrifice them, I could finally find that treasure!
+  notesDescription: "At the silent bottom of the ocean, amidst glowing coral reefs
+    and dancing fish, Nyi Roro Kidul resided. On her majestic crown, a green emerald
+    stone sparkled, emanating a deep emerald light, symbolizing the boundless riches
+    of the seabed that formed her kingdom. Her proud green sash, made from select
+    sea silk, flowed gently around her, adorned with intricate gold motifs that seemed
+    alive\u2014strands of golden seaweed, shimmering pearls, and gold-dusted sea
+    creatures\u2014illustrating not only unparalleled luxury but also the eternal
+    well-being she bestowed upon her underwater realm. The emerald and the sash were
+    not mere adornments, but tangible representations of the power, prosperity, and
+    perfect balance maintained by the Queen of the Southern Sea, ensuring every wave
+    brought blessings to her endless kingdom."

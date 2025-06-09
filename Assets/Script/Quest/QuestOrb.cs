@@ -10,7 +10,11 @@ public class QuestOrb : MonoBehaviour
     public GameObject[] questPrefabs;
     public Transform[] questPoints;
     [SerializeField] QuestBase currentQuest;
-    [SerializeField] private SphereCollider questActivation; 
+    [SerializeField] private SphereCollider questActivation;
+    [SerializeField] private int questTracker;
+    [SerializeField] private GameObject[] notePrefabs;
+    [SerializeField] private Transform spawnPoint;
+    [SerializeField] private int prefabIndex;
 
     [SerializeField] private int maxQuests = 10;
     private int questsCompleted = 0;
@@ -19,7 +23,9 @@ public class QuestOrb : MonoBehaviour
     [SerializeField] private InteractionManager interactionManager;
     public Waypoint waypoint;
     public Text questComplete;
-    [SerializeField] private GameObject findQuestMasterUI; 
+    [SerializeField] private GameObject findQuestMasterUI;
+
+    public static event System.Action OnQuestTracker6; 
 
     private void Awake()
     {
@@ -44,6 +50,8 @@ public class QuestOrb : MonoBehaviour
     {
         // Set batas maksimal quest secara random
         maxQuests = Random.Range(5, 11);
+        questTracker = 0;
+        prefabIndex = 0; 
         //questPoints = GameObject.FindGameObjectWithTag("questLoc"); 
     }
 
@@ -54,6 +62,12 @@ public class QuestOrb : MonoBehaviour
             // Nonaktifkan waypoint jika semua quest selesai
             waypoint.target = null;
             return;
+        }
+
+        if (questTracker >= 6)
+        {
+            OnQuestTracker6?.Invoke();
+            Destroy(this.gameObject); 
         }
 
         if (currentQuest)
@@ -71,7 +85,6 @@ public class QuestOrb : MonoBehaviour
                     allQuestsFinished = true;
                     waypoint.target = null;
                 }
-
                 StartCoroutine(QuestComplete());
             }
         }
@@ -88,6 +101,8 @@ public class QuestOrb : MonoBehaviour
         {
             findQuestMasterUI.SetActive(false);
         }
+
+
     }
 
     private void OnTriggerEnter(Collider other)
@@ -146,7 +161,7 @@ public class QuestOrb : MonoBehaviour
         questComplete.color = c;
 
         float t = 0.0f;
-
+        OnCompleteQuestSpawn(); 
         yield return new WaitForSeconds(2.0f);
 
         while (t < 1.0f)
@@ -157,7 +172,27 @@ public class QuestOrb : MonoBehaviour
             t += Time.deltaTime;
             yield return null;
         }
-
+        
         questComplete.enabled = false;
+    }
+
+    private void OnQuestTrackerNumberChange()
+    {
+        if (questTracker > 0 && questTracker % 3 == 0)
+        {
+            prefabIndex = (questTracker / 3) - 1;
+
+            // Safety check in case you run out of prefabs
+            if (prefabIndex >= 0 && prefabIndex < notePrefabs.Length)
+            {
+                Instantiate(notePrefabs[prefabIndex], spawnPoint != null ? spawnPoint.position : transform.position, spawnPoint != null ? spawnPoint.rotation : transform.rotation);
+            }
+        }
+    }
+
+    private void OnCompleteQuestSpawn()
+    {
+        questTracker++; 
+        OnQuestTrackerNumberChange();
     }
 }

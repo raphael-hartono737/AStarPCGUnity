@@ -908,6 +908,7 @@ Transform:
   - {fileID: 939685113138514898}
   - {fileID: 8897761852115590945}
   - {fileID: 3188464834577319657}
+  - {fileID: 2014329749967494448}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &5262822082056682054
@@ -932,6 +933,12 @@ MonoBehaviour:
   questPoints:
   - {fileID: 8897761852115590945}
   currentQuest: {fileID: 0}
+  questActivation: {fileID: 0}
+  questTracker: 0
+  notePrefabs:
+  - {fileID: 7224696159200005124, guid: 0bdbf5aaf1b013e40af2bbfa684a9113, type: 3}
+  - {fileID: 2268222417010858574, guid: 29fad4c32d7c5bd4a92e9a6eae75d7c4, type: 3}
+  spawnPoint: {fileID: 2014329749967494448}
   maxQuests: 10
   interactionManager: {fileID: 0}
   waypoint: {fileID: 0}
@@ -1027,3 +1034,34 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 2.3685913, y: 3.8969727, z: 2.215973}
   m_Center: {x: 0.1416626, y: 1.4484863, z: 0.16844177}
+--- !u!1 &7918132892724770969
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2014329749967494448}
+  m_Layer: 0
+  m_Name: spawnPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2014329749967494448
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7918132892724770969}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -1.16, y: 0, z: 9.32}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8282882659711414846}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

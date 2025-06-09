@@ -15,6 +15,7 @@ public class GameManager : MonoBehaviour
     void OnEnable()
     {
         RoadGenerationEvents.OnRoadGenerationComplete += HandleGameInitialization;
+        QuestOrb.OnQuestTracker6 += HandleSecondPhaseInitialization; 
     }
 
     void OnDisable()
@@ -41,5 +42,10 @@ public class GameManager : MonoBehaviour
             Debug.LogError("Player GameObject not found!");
             return;
         }
+    }
+
+    void HandleSecondPhaseInitialization()
+    {
+
     }
 }
