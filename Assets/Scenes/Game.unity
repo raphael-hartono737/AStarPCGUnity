@@ -2584,7 +2584,7 @@ MonoBehaviour:
   mapGenerator: {fileID: 824891842}
   verticalOffset: 1
   questOrbTag: questOrbTag
-  questOrbPrefab: {fileID: 7393501796582585112, guid: 754d092e190e1734ab2d3b58d4ee3e52, type: 3}
+  questOrbPrefab: {fileID: 7393501796582585112, guid: 1293279348742ef499b280c7ea965e43, type: 3}
 --- !u!4 &1958713409
 Transform:
   m_ObjectHideFlags: 0

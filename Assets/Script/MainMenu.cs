@@ -4,9 +4,9 @@ using UnityEngine.SceneManagement;
 public class MainMenu : MonoBehaviour
 {
     public void PlayGame()
-    {
-        // Memuat scene video (scene index 1)
-        SceneManager.LoadSceneAsync("OpeningVideo");
+    { 
+        // 2. Langsung pindah ke scene "OpeningVideo" untuk ditampilkan
+        SceneManager.LoadScene("OpeningVideo");
     }
 
     public void QuitGame()

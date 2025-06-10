@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -99,11 +100,11 @@ public class GameManager : MonoBehaviour
     {
         if (goodEnding == true && badEnding == false)
         {
-            Debug.Log("Kabur cuy!");
+            SceneManager.LoadScene("TrueEnding");
         }
         else if (goodEnding == false && badEnding == true)
         {
-            Debug.Log("Dirodok Roro!");
+            SceneManager.LoadScene("BadEnding");
         }
         else
         {
