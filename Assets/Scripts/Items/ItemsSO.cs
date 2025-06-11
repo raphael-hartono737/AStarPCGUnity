@@ -13,7 +13,11 @@ public class ItemsSO : ScriptableObject
     {
         if (statToChange == StatToChange.hydration)
         {
-            Player playerHydration = GameObject.Find("Player").GetComponent<Player>();
+            Player playerHydration = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
+            if (playerHydration == null)
+            {
+                Debug.Log("Items: Player Null!");
+            }
             if (playerHydration.playerHydrate >= playerHydration.maxHydrate)
             {
                 return false; 
@@ -27,7 +31,11 @@ public class ItemsSO : ScriptableObject
         }
         if (statToChange == StatToChange.hunger)
         {
-            Player playerHunger = GameObject.Find("Player").GetComponent<Player>();
+            Player playerHunger = GameObject.FindGameObjectWithTag("Player").GetComponent<Player>();
+            if (playerHunger == null)
+            {
+                Debug.Log("Items: Player Null!");
+            }
             if (playerHunger.playerHunger >= playerHunger.maxHunger)
             {
                 return false;

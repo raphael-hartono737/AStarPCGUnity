@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &4548478279484752977
+--- !u!1 &4285779954624199092
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,48 +8,49 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 8759682651999557204}
-  - component: {fileID: 6145466097462948975}
-  - component: {fileID: 8842702706397137206}
-  - component: {fileID: 653290419416151543}
-  - component: {fileID: 2037075864854077614}
+  - component: {fileID: 8801316713579326486}
+  - component: {fileID: 449098556773784936}
+  - component: {fileID: 6280790167832372622}
+  - component: {fileID: 3759838376015558117}
+  - component: {fileID: 446636727416374945}
+  - component: {fileID: 6933288966418455210}
   m_Layer: 0
-  m_Name: Palm_Tree
+  m_Name: Coconut
   m_TagString: Water
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &8759682651999557204
+--- !u!4 &8801316713579326486
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4548478279484752977}
+  m_GameObject: {fileID: 4285779954624199092}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: -1, z: 0, w: 0}
-  m_LocalPosition: {x: 670.66895, y: 43.44291, z: -654.04596}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -623.0981, y: 41.85805, z: -122.707344}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: -180, z: 0}
---- !u!33 &6145466097462948975
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!33 &449098556773784936
 MeshFilter:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4548478279484752977}
-  m_Mesh: {fileID: -2631843573708248593, guid: 3b4d14a0e9bc7c344abc404a797362c0, type: 3}
---- !u!23 &8842702706397137206
+  m_GameObject: {fileID: 4285779954624199092}
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!23 &6280790167832372622
 MeshRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4548478279484752977}
+  m_GameObject: {fileID: 4285779954624199092}
   m_Enabled: 1
   m_CastShadows: 1
   m_ReceiveShadows: 1
@@ -63,7 +64,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d0652c0326b3c5e4181b5798e1d319cb, type: 2}
+  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -85,13 +86,13 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &653290419416151543
-MeshCollider:
+--- !u!65 &3759838376015558117
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4548478279484752977}
+  m_GameObject: {fileID: 4285779954624199092}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -103,17 +104,16 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -2631843573708248593, guid: 3b4d14a0e9bc7c344abc404a797362c0, type: 3}
---- !u!65 &2037075864854077614
-BoxCollider:
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!135 &446636727416374945
+SphereCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4548478279484752977}
+  m_GameObject: {fileID: 4285779954624199092}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -126,5 +126,26 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.7282715, y: 4.2354417, z: 0.7720337}
-  m_Center: {x: -0.020080566, y: 2.123284, z: 0.004058838}
+  m_Radius: 1
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &6933288966418455210
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4285779954624199092}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 110ce342a61f3e54a93246b5471f0721, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemName: Coconut
+  quantity: 1
+  sprite: {fileID: 21300000, guid: 673f77fff4529a94c8ad82619910cc1c, type: 3}
+  itemDescription: 'This is a fresh coconut water. It helps you maintain your hydration.
+
+
+    Hydration:
+    +150'
+  inventoryManager: {fileID: 0}

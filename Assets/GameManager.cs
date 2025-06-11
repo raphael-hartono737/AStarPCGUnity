@@ -11,6 +11,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Transform portLocation;
     [SerializeField] private MapGenerator mapGenerator;
     [SerializeField] private MainRoadGenerator roadGen;
+    [SerializeField] private bool firstInitialization;
 
     [Header("Phase 2")]
     [SerializeField] private int templeCounter = 0; //Temple Counter
@@ -39,6 +40,13 @@ public class GameManager : MonoBehaviour
     {
         RoadGenerationEvents.OnRoadGenerationComplete -= HandleGameInitialization;
     }
+    private void Update()
+    {
+        if (firstInitialization == true && player == null)
+        {
+            SceneManager.LoadScene("Main Menu"); 
+        }
+    }
     void HandleGameInitialization()
     {
         findAllTemplesUI.SetActive(false);
@@ -51,6 +59,7 @@ public class GameManager : MonoBehaviour
             Vector3 spawnPos = portLocation.position + new Vector3(0f, 5f, 0f);
             Debug.Log($"[GameManager] About to Instantiate player at spawnPos = {spawnPos}");
             Instantiate(player, spawnPos, Quaternion.identity);
+            firstInitialization = true;
             OnGameManagerComplete?.Invoke(); 
         }
         else
@@ -98,11 +107,11 @@ public class GameManager : MonoBehaviour
 
     public void Outcome()
     {
-        if (goodEnding == true && badEnding == false)
+        if (goodEnding == true && badEnding == false && thirdPhase == true)
         {
             SceneManager.LoadScene("TrueEnding");
         }
-        else if (goodEnding == false && badEnding == true)
+        else if (goodEnding == false && badEnding == true && thirdPhase == true)
         {
             SceneManager.LoadScene("BadEnding");
         }

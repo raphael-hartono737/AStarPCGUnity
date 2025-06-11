@@ -12,7 +12,7 @@ public class InteractionManager : MonoBehaviour
     [SerializeField] private Player player; 
     private string currentTag = "";
     [SerializeField] private GameObject foodPrefab;
-    //[SerializeField] private GameObject waterBottlePrefab; 
+    [SerializeField] private GameObject waterPrefab; 
 
     void Start()
     {
@@ -86,20 +86,14 @@ public class InteractionManager : MonoBehaviour
                 break;
 
             case "Water":
-                Debug.Log("Drinking Water");
-                dropRate = UnityEngine.Random.Range(2, 100); 
+                dropRate = UnityEngine.Random.Range(1, 4);
+                ConsumablesCounting(dropRate, waterPrefab);
                 break;
 
             case "Food":
-                Debug.Log("Eating Food");
-                dropRate = UnityEngine.Random.Range(2, 25);
-                Debug.Log("Drop Rate: " + dropRate); 
-                if (dropRate <= 10)
-                {
-                    Instantiate(foodPrefab, player.transform.position, Quaternion.identity);
-                    Destroy(currentInteractable);
-                }
-                Destroy(currentInteractable);
+                dropRate = UnityEngine.Random.Range(1, 4);
+                Debug.Log("Drop Rate: " + dropRate);
+                ConsumablesCounting(dropRate, foodPrefab);
                 break;
 
             case "Door":
@@ -140,5 +134,14 @@ public class InteractionManager : MonoBehaviour
                 Debug.LogWarning($"No interaction defined for tag: {currentTag}");
                 break;
         }
+    }
+
+    private void ConsumablesCounting(int count, GameObject gameObject)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            Instantiate(gameObject, player.transform.position, Quaternion.identity);
+        }
+        Destroy(currentInteractable);
     }
 }

@@ -15,6 +15,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private float shakeAmplitude;
         private float shakeFrequency;
         private float shakeTimer;
+        public bool canRun = true;
 
 
 
@@ -34,7 +35,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
             private bool m_Running;
 #endif
 
-            public void UpdateDesiredTargetSpeed(Vector2 input)
+            public void UpdateDesiredTargetSpeed(Vector2 input, bool canRun)
             {
                 if (input == Vector2.zero) return;
                 if (input.x > 0 || input.x < 0)
@@ -56,8 +57,15 @@ namespace UnityStandardAssets.Characters.FirstPerson
 #if !MOBILE_INPUT
                 if (Input.GetKey(RunKey))
                 {
-                    CurrentTargetSpeed *= RunMultiplier;
-                    m_Running = true;
+                    if (canRun == true)
+                    {
+                        CurrentTargetSpeed *= RunMultiplier;
+                        m_Running = true;
+                    }
+                    else
+                    {
+                        m_Running = false;
+                    }
                 }
                 else
                 {
@@ -262,7 +270,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 x = Input.GetAxis("Horizontal"),
                 y = Input.GetAxis("Vertical")
             };
-            movementSettings.UpdateDesiredTargetSpeed(input);
+            movementSettings.UpdateDesiredTargetSpeed(input, this.canRun);
             return input;
         }
 

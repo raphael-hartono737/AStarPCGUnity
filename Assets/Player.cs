@@ -9,7 +9,6 @@ public class Player : MonoBehaviour
     public bool isGrounded = false;
     [Header("Player Stats")]
     [SerializeField] public HealthData playerHealth;
-    [SerializeField] public Temperature playerTemperature;
     [SerializeField] private RigidbodyFirstPersonController playerMovement; 
     [SerializeField] public float playerHunger = 1000.0f;
     [SerializeField] public float playerHydrate = 1000.0f; 
@@ -18,8 +17,11 @@ public class Player : MonoBehaviour
     public float maxHydrate = 1000.0f;
 
 
-    [Header("Player Stats Multiplication")]
-    [SerializeField] private float dehydrationAmount;
+    [Header("Rates")]
+    public float baseDehydrationRate = 1f;
+    public float runningDehydrationRate = 5f;
+    private float dehydrationRate;
+    private float hungerRate = 1f;
 
     [Header("Player Interact & Inventory Manager")]
     [SerializeField] private GameObject interactCollider;
@@ -28,14 +30,16 @@ public class Player : MonoBehaviour
     [Header("Player Sliders")]
     [SerializeField] private Slider healthSlider;
     [SerializeField] private Slider hungerSlider;
-    [SerializeField] private Slider hydrateSlider; 
+    [SerializeField] private Slider hydrateSlider;
 
-    private float tempAmount; 
+    private Coroutine dehydrationRoutine;
+    private Coroutine hungerRoutine;
+    private Coroutine damageRoutine;
+    private Coroutine healingRoutine;
     private void Start()
     {
         playerHunger = 1000.0f;
-        playerHydrate = 1000.0f; 
-        dehydrationAmount = 1.0f; 
+        playerHydrate = 1000.0f;
         // Initialize health at the start of the game
         if (playerHealth != null)
         {
@@ -44,9 +48,8 @@ public class Player : MonoBehaviour
             // Subscribe to the health change event
             playerHealth.OnHealthChanged += OnHealthChanged;
         }
-
-        StartCoroutine(PlayerHunger());
-        StartCoroutine(PlayerDehydration());
+        dehydrationRoutine = StartCoroutine(PlayerDehydration());
+        hungerRoutine = StartCoroutine(PlayerHunger());
         UpdateSliders(); 
     }
 
@@ -54,35 +57,75 @@ public class Player : MonoBehaviour
     {
         if (this.gameObject != null)
         {
-            if (playerMovement.movementSettings.Running == true)
-            {
-                dehydrationAmount = 2.5f; 
-            }
-            else
-            {
-                dehydrationAmount = 1.0f; 
-            }
-            if (playerTemperature.temperature < playerTemperature.minTemperature)
-            {
-                Debug.Log("Player is Freezing!");
-                Freezing();
-            }
+            dehydrationRate = playerMovement.movementSettings.Running ? runningDehydrationRate : baseDehydrationRate;
         }
 
         if (playerHealth.CurrentHealth == 0)
         {
+            StopAllCoroutines(); 
             Destroy(this.gameObject); 
         }
-        
+
+        if (playerHydrate <= 0f)
+        {
+            playerMovement.canRun = false; 
+            if (dehydrationRoutine != null)
+            {
+                StopCoroutine(dehydrationRoutine);
+                dehydrationRoutine = null;
+                hungerRate = 3f;
+            }
+        }
+        else
+        {
+            playerMovement.canRun = true; 
+            if (dehydrationRoutine == null)
+                dehydrationRoutine = StartCoroutine(PlayerDehydration());
+            hungerRate = 1f;
+        }
+
+        if (playerHunger <= 0f)
+        {
+            if (hungerRoutine != null)
+            {
+                StopCoroutine(hungerRoutine);
+                hungerRoutine = null;
+            }
+            if (damageRoutine == null)
+                damageRoutine = StartCoroutine(PlayerTakingDamage(1f));
+        }
+        else
+        {
+            if (damageRoutine != null)
+            {
+                StopCoroutine(damageRoutine);
+                damageRoutine = null;
+            }
+            if (hungerRoutine == null)
+                hungerRoutine = StartCoroutine(PlayerHunger());
+        }
+
+        if (playerHunger > 0f && playerHydrate > 0f && playerHealth.CurrentHealth < playerHealth.MaxHealth)
+        {
+            if (healingRoutine == null)
+                healingRoutine = StartCoroutine(PlayerHealing());
+        }
+        else
+        {
+            if (healingRoutine != null)
+            {
+                StopCoroutine(healingRoutine);
+                healingRoutine = null;
+            }
+        }
+
     }
 
     void UpdateSliders()
     {
-        if (hungerSlider != null)
-            hungerSlider.value = playerHunger / maxHunger;
-
-        if (hydrateSlider != null)
-            hydrateSlider.value = playerHydrate / maxHydrate;
+        if (hungerSlider) hungerSlider.value = playerHunger / maxHunger;
+        if (hydrateSlider) hydrateSlider.value = playerHydrate / maxHydrate;
+        if (healthSlider) healthSlider.value = playerHealth.CurrentHealth / playerHealth.MaxHealth;
     }
     // Update is called once per frame
     private void OnCollisionEnter(Collision collision)
@@ -102,23 +145,16 @@ public class Player : MonoBehaviour
         }
     }
 
-
     private void OnHealthChanged(float newHealth)
     {
-        Debug.Log($"Player Health Changed: {newHealth}/{playerHealth.MaxHealth}");
-
-        if (newHealth <= 0)
-        {
-            Debug.Log("Player has died!");
-            Die();
-        }
+        UpdateSliders();
+        if (newHealth <= 0) Die();
     }
 
     private void Die()
     {
-        // Handle player death logic here
-        Debug.Log("Game Over!");
-        Destroy(gameObject); // Example: Destroy the player object
+        StopAllCoroutines();
+        Destroy(gameObject); 
     }
 
     public void TakeDamage(float amount)
@@ -129,49 +165,47 @@ public class Player : MonoBehaviour
         }
     }
 
-    //=================Player Freezing====================
-
-    private void Freezing()
+    private IEnumerator PlayerDehydration()
     {
-        if (playerTemperature.temperature < 0)
+        while (gameObject && playerHydrate > 0f)
         {
-            StartCoroutine(PlayerTakingDamage(0.5f)); 
-        }
-    }
-
-    private IEnumerator PlayerTakingDamage(float amount)
-    {
-        while (playerHealth.CurrentHealth != 0)
-        {
-            TakeDamage(amount);
-            yield return null; 
+            playerHydrate = Mathf.Clamp(playerHydrate - dehydrationRate, 0, maxHydrate);
+            UpdateSliders();
+            yield return new WaitForSeconds(1f);
         }
     }
 
     private IEnumerator PlayerHunger()
     {
-        while (this.gameObject != null && playerHunger > 0)
+        while (gameObject && playerHunger > 0f)
         {
-            playerHunger = playerHunger - 1.0f;
-            UpdateSliders(); 
-            yield return new WaitForSeconds(1.0f); 
-        }
-        if (playerHunger < 0)
-        {
-            playerHealth.TakeDamage(1.0f); 
-        }
-    }
-
-    private IEnumerator PlayerDehydration()
-    {
-        while (this.gameObject != null && playerHydrate > 0)
-        {
-            playerHydrate = playerHydrate - dehydrationAmount;
+            playerHunger = Mathf.Clamp(playerHunger - hungerRate, 0, maxHunger);
             UpdateSliders();
-            yield return new WaitForSeconds(1.0f);
+            yield return new WaitForSeconds(1f);
         }
     }
 
+    private IEnumerator PlayerTakingDamage(float amount)
+    {
+        while (playerHealth.CurrentHealth > 0f)
+        {
+            TakeDamage(amount);
+            yield return new WaitForSeconds(3f);
+        }
+    }
+
+    private IEnumerator PlayerHealing()
+    {
+        while (playerHunger > 0f && playerHydrate > 0f && playerHealth.CurrentHealth < playerHealth.MaxHealth)
+        {
+            playerHealth.Heal(5f);
+            UpdateSliders();
+            yield return new WaitForSeconds(3f);
+        }
+    }
+
+
+    #region Items Coordination
     public void ChangeHunger(float foodValue)
     {
         Debug.Log("Hunger: + " + foodValue); 
@@ -190,5 +224,6 @@ public class Player : MonoBehaviour
     {
         Debug.Log("All Keys Collected!");
     }
+    #endregion
 
 }
