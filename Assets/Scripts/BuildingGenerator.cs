@@ -171,6 +171,8 @@ public class BuildingGenerator : MonoBehaviour
         // Center in grid-space: half extents
         Vector3 offset = new Vector3((size.x - 1) * 0.5f, 0, (size.z - 1) * 0.5f);
         Vector3 center = origin + offset;
+        center.x = center.x - 10f;
+        center.z = center.z - 10f;
 
         // Raycast for Y
         Vector3 rayStart = center + Vector3.up * placementHeightCheck;
