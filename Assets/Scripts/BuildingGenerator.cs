@@ -74,13 +74,46 @@ public class BuildingGenerator : MonoBehaviour
     bool TryPlaceBuilding(Vector2Int site, GameObject prefab, out BuildingZone zone)
     {
         zone = null;
+        // 1) Figure out prefab’s footprint size
         Vector3Int size = CalculatePrefabSize(prefab);
 
-        if (!CanPlaceBuilding(site, size)) return false;
+        // 2) Can we place here?
+        if (!CanPlaceBuilding(site, size))
+            return false;
 
+        // 3) Compute world‐space position (centers over the grid cell and Y‐raycasts) 
         Vector3 worldPosition = CalculateWorldPosition(site, size);
-        GameObject buildingInstance = InstantiateBuilding(prefab, worldPosition);
 
+        // 4) Detect which neighbouring cell is road‐occupied
+        Vector2Int roadDir = Vector2Int.zero;
+        foreach (var dir in MainRoadGenerator.Directions)
+        {
+            Vector2Int neighbour = site + dir;
+            if (roadGenerator.IsInBounds(neighbour) && grid[neighbour.x, neighbour.y].road != RoadType.None)
+            {
+                roadDir = dir;
+                break;
+            }
+        }
+
+        // 5) Build rotation so +Z “forward” faces toward the road
+        Quaternion rotation;
+        if (roadDir != Vector2Int.zero)
+        {
+            Vector3 lookDir = new Vector3(roadDir.x, 0, roadDir.y);
+            rotation = Quaternion.LookRotation(lookDir, Vector3.up);
+        }
+        else
+        {
+            // fallback: no adjacent road found
+            rotation = Quaternion.identity;
+        }
+
+        // 6) Instantiate with the computed rotation
+        GameObject buildingInstance = Instantiate(prefab, worldPosition, rotation, transform);
+        buildingInstance.name = $"Building_{currentPrefabIndex}";
+
+        // 7) Register zone for occupancy and gizmos
         zone = CreateBuildingZone(site, size, buildingInstance);
         return true;
     }

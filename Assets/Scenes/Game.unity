@@ -1771,6 +1771,7 @@ GameObject:
   - component: {fileID: 985700891}
   - component: {fileID: 985700890}
   - component: {fileID: 985700892}
+  - component: {fileID: 985700893}
   m_Layer: 0
   m_Name: RoadGeneration
   m_TagString: Untagged
@@ -1846,6 +1847,26 @@ MonoBehaviour:
   - {fileID: 8210543606064350901, guid: 81e7f505888955e46ab4944aa8f6c0c7, type: 3}
   roadScale: 1
   mainRoad: {fileID: 985700890}
+--- !u!114 &985700893
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 985700889}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 916931a288fd5424c9b8bc7b7384e5c3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxBuildings: 50
+  buildingYOffset: 0.5
+  placementHeightCheck: 5
+  buildingPrefabs:
+  - {fileID: 8786635511794619848, guid: 082f15aebf7395e46a5ba5ba6da0b33f, type: 3}
+  buildingZoneColors: []
+  drawGizmos: 1
+  roadGenerator: {fileID: 0}
 --- !u!1 &1013881811
 GameObject:
   m_ObjectHideFlags: 0
@@ -2442,7 +2463,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1363361566}
-  m_Mesh: {fileID: 1718286581}
+  m_Mesh: {fileID: 1710827962}
 --- !u!4 &1363361569
 Transform:
   m_ObjectHideFlags: 0
@@ -2491,7 +2512,7 @@ MeshCollider:
   serializedVersion: 5
   m_Convex: 0
   m_CookingOptions: 30
-  m_Mesh: {fileID: 1718286581}
+  m_Mesh: {fileID: 1710827962}
 --- !u!1 &1367006559
 GameObject:
   m_ObjectHideFlags: 0
@@ -3346,7 +3367,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!43 &1718286581
+--- !u!43 &1710827962
 Mesh:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
